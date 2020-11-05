@@ -1,10 +1,15 @@
 ﻿// LadyBug_Client.cpp : 애플리케이션에 대한 진입점을 정의합니다.
 //
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #include "framework.h"
 #include "LadyBug_Client.h"
 
+
 #define MAX_LOADSTRING 100
+constexpr int SERVERPORT = 9000;
+constexpr int BUFSIZE = 512;
+const char* SERVERIP = "127.0.0.1";
 
 // 전역 변수:
 HINSTANCE hInst;                                // 현재 인스턴스입니다.
@@ -26,6 +31,30 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     // TODO: 여기에 코드를 입력합니다.
+    
+    //서버와 통신할 소켓 프로토콜을 초기화 합니다.
+    int returnvalue = 0;
+
+    WSADATA wsa;
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+        return 1;
+
+    //소켓을 생성합니다.
+    SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (sock == INVALID_SOCKET)
+        return 1;/*err_quit("socket()")*/
+
+    //통신할 서버의 주소 구조체를 설정합니다.
+    SOCKADDR_IN server_sock_addr;
+    ZeroMemory(&server_sock_addr, sizeof(server_sock_addr));
+    server_sock_addr.sin_family = AF_INET;
+    server_sock_addr.sin_addr.S_un.S_addr = inet_addr(SERVERIP);
+    server_sock_addr.sin_port = ntohs(SERVERPORT);
+
+    //서버에 연결요청을 합니다.
+    returnvalue = connect(sock, (sockaddr*)&server_sock_addr, sizeof(server_sock_addr));
+    if (returnvalue == SOCKET_ERROR)
+        return 1;/*err_quit("connect()")*/
 
     // 전역 문자열을 초기화합니다.
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
