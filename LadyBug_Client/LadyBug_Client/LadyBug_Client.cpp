@@ -7,9 +7,11 @@
 
 
 #define MAX_LOADSTRING 100
+
+//TODO : local ip -> network ip
+const char* SERVERIP = "127.0.0.1";
 constexpr int SERVERPORT = 9000;
 constexpr int BUFSIZE = 512;
-const char* SERVERIP = "127.0.0.1";
 
 // 전역 변수:
 HINSTANCE hInst;                                // 현재 인스턴스입니다.
