@@ -13,3 +13,12 @@
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
+
+#include <iostream>
+#include <string>
+#include <vector>
+
+using namespace std;
+
+#include <WinSock2.h>
+#pragma comment(lib, "ws2_32")
