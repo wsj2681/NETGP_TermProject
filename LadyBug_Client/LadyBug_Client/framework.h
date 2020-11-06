@@ -13,6 +13,7 @@
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
+#include <atlimage.h>
 
 #include <iostream>
 #include <string>
@@ -22,17 +23,3 @@ using namespace std;
 
 #include <WinSock2.h>
 #pragma comment(lib, "ws2_32")
-
-class Object
-{
-public:
-	Object() = default;
-	Object(const Object&) = delete;
-	Object& operator=(const Object&) = delete;
-	~Object() = default;
-
-private:
-	float Pos_x, Pos_y;
-	bool is_active = true;
-	int client_id;
-};

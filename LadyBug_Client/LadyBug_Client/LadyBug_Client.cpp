@@ -1,10 +1,13 @@
 ﻿// LadyBug_Client.cpp : 애플리케이션에 대한 진입점을 정의합니다.
 //
+#if defined(DEBUG) | defined(_DEBUG)
+#pragma comment(linker, "/entry:wWinMainCRTStartup /subsystem:console")
+#endif
+
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #include "framework.h"
 #include "LadyBug_Client.h"
-
 
 #define MAX_LOADSTRING 100
 
@@ -23,6 +26,20 @@ ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+
+bool KeyInput[4] = { false, false, false, false };
+
+void GameInit();
+void GameRelease();
+
+void LobbyState();
+void MainGameState();
+void ResultState();
+
+void SendtoServer(const SOCKET& sock, const bool keyInput[]);
+void RecvtoServer(const SOCKET& sock);
+
+void DrawObject();
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -54,9 +71,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     server_sock_addr.sin_port = ntohs(SERVERPORT);
 
     //서버에 연결요청을 합니다.
-    returnvalue = connect(sock, (sockaddr*)&server_sock_addr, sizeof(server_sock_addr));
-    if (returnvalue == SOCKET_ERROR)
-        return 1;/*err_quit("connect()")*/
+    //returnvalue = connect(sock, (sockaddr*)&server_sock_addr, sizeof(server_sock_addr));
+    //if (returnvalue == SOCKET_ERROR)
+    //    return 1;/*err_quit("connect()")*/
+
+    //게임 객체를 초기화 합니다.
+    GameInit();
 
     // 전역 문자열을 초기화합니다.
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
@@ -154,8 +174,62 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    cout << KeyInput[0] << KeyInput[1] << KeyInput[2] << KeyInput[3] << endl;
     switch (message)
     {
+    case WM_CREATE:
+        GameInit();
+        break;
+    case WM_CHAR:
+        switch (wParam)
+        {
+        case 'x':
+            cout << "되잖아" << endl;
+            break;
+        }
+    case WM_KEYDOWN:
+        switch (wParam)
+        {
+        case VK_UP:
+                KeyInput[0] = true;
+            break;
+        case VK_DOWN:
+                KeyInput[1] = true;
+            break;
+        case VK_LEFT:
+                KeyInput[2] = true;
+            break;
+        case VK_RIGHT:
+                KeyInput[3] = true;
+            break;
+        case VK_SPACE:
+                KeyInput[0] = true;
+            break;
+        default:
+            break;
+        }
+    case WM_KEYUP:
+        switch (wParam)
+        {
+        case VK_UP:
+                KeyInput[0] = false;
+            break;
+        case VK_DOWN:
+                KeyInput[1] = false;
+            break;
+        case VK_LEFT:
+                KeyInput[2] = false;
+            break;
+        case VK_RIGHT:
+                KeyInput[3] = false;
+            break;
+        case VK_SPACE:
+                KeyInput[0] = false;
+            break;
+        default:
+            break;
+        }
+
     case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
@@ -208,4 +282,72 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     }
     return (INT_PTR)FALSE;
+}
+
+void GameInit()
+{
+    CImage imageBackBuffer;
+    CImage imageBackGround;
+    CImage imagePlayer[2];
+    CImage imageMonster;
+    CImage imageItem[2];
+    CImage imageGameStart;
+    CImage imageGameResult;
+
+    imageBackBuffer.Load(_TEXT(""));
+    
+    imageBackGround.Load(_TEXT(""));
+    
+    imagePlayer[0].Load(_TEXT(""));
+    imagePlayer[1].Load(_TEXT(""));
+
+    imageMonster.Load(_TEXT(""));
+
+    imageItem[0].Load(_TEXT(""));
+    imageItem[1].Load(_TEXT(""));
+
+    imageGameStart.Load(_TEXT(""));
+    imageGameResult.Load(_TEXT(""));
+
+    imageBackBuffer.Create(700, 480, 24, 0);
+
+}
+
+void GameRelease()
+{
+
+}
+
+void LobbyState()
+{
+
+}
+
+void MainGameState()
+{
+}
+
+void MainGameState(const SOCKET& sock)
+{
+    DrawObject();
+    SendtoServer(sock,NULL);
+    RecvtoServer(sock);
+}
+
+void ResultState()
+{
+
+}
+
+void SendtoServer(const SOCKET& sock, const bool keyInput[])
+{
+}
+
+void RecvtoServer(const SOCKET& sock)
+{
+}
+
+void DrawObject()
+{
+
 }
