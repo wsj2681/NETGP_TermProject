@@ -8,8 +8,11 @@
 #define WIN32_LEAN_AND_MEAN             // 거의 사용되지 않는 내용을 Windows 헤더에서 제외합니다.
 // Windows 헤더 파일
 #include <windows.h>
+#include <WinUser.h>
+
 // C 런타임 헤더 파일입니다.
 #include <stdlib.h>
+#include <stdio.h>
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
@@ -23,3 +26,11 @@ using namespace std;
 
 #include <WinSock2.h>
 #pragma comment(lib, "ws2_32")
+
+struct InputFlag
+{
+	unsigned char UP : 1;
+	unsigned char DOWN : 1;
+	unsigned char RIGHT : 1;
+	unsigned char LEFT : 1;
+};

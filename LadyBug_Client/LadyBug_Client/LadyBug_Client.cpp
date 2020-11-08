@@ -27,7 +27,28 @@ BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
+struct Object
+{
+    float x = 0.f;
+    float y = 0.f;
+    bool is_active = true;
+    CImage image;
+};
+
 bool KeyInput[4] = { false, false, false, false };
+
+InputFlag input;
+
+CImage imageBackBuffer;
+CImage imageBackGround;
+CImage imageGameStart;
+CImage imageGameResult;
+
+Object Player[2];
+
+Object Monster;
+
+Object Item[2];
 
 void GameInit();
 void GameRelease();
@@ -174,7 +195,11 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    cout << KeyInput[0] << KeyInput[1] << KeyInput[2] << KeyInput[3] << endl;
+    cout << input.UP << input.DOWN << input.LEFT << input.RIGHT << " - "<<sizeof(input)<<endl;
+    input.UP = 0;
+    input.DOWN = 0;
+    input.LEFT = 0;
+    input.RIGHT = 0;
     switch (message)
     {
     case WM_CREATE:
@@ -191,40 +216,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         switch (wParam)
         {
         case VK_UP:
-                KeyInput[0] = true;
+            input.UP = 1;
             break;
         case VK_DOWN:
-                KeyInput[1] = true;
+            input.DOWN = 1;
             break;
         case VK_LEFT:
-                KeyInput[2] = true;
+            input.LEFT = 1;
             break;
         case VK_RIGHT:
-                KeyInput[3] = true;
+            input.RIGHT = 1;
             break;
         case VK_SPACE:
                 KeyInput[0] = true;
-            break;
-        default:
-            break;
-        }
-    case WM_KEYUP:
-        switch (wParam)
-        {
-        case VK_UP:
-                KeyInput[0] = false;
-            break;
-        case VK_DOWN:
-                KeyInput[1] = false;
-            break;
-        case VK_LEFT:
-                KeyInput[2] = false;
-            break;
-        case VK_RIGHT:
-                KeyInput[3] = false;
-            break;
-        case VK_SPACE:
-                KeyInput[0] = false;
             break;
         default:
             break;
@@ -286,25 +290,19 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 void GameInit()
 {
-    CImage imageBackBuffer;
-    CImage imageBackGround;
-    CImage imagePlayer[2];
-    CImage imageMonster;
-    CImage imageItem[2];
-    CImage imageGameStart;
-    CImage imageGameResult;
+    
 
     imageBackBuffer.Load(_TEXT(""));
     
     imageBackGround.Load(_TEXT(""));
     
-    imagePlayer[0].Load(_TEXT(""));
-    imagePlayer[1].Load(_TEXT(""));
+    Player[0].image.Load(_TEXT(""));
+    Player[0].image.Load(_TEXT(""));
 
-    imageMonster.Load(_TEXT(""));
+    Monster.image.Load(_TEXT(""));
 
-    imageItem[0].Load(_TEXT(""));
-    imageItem[1].Load(_TEXT(""));
+    Item[0].image.Load(_TEXT(""));
+    Item[1].image.Load(_TEXT(""));
 
     imageGameStart.Load(_TEXT(""));
     imageGameResult.Load(_TEXT(""));
@@ -349,5 +347,19 @@ void RecvtoServer(const SOCKET& sock)
 
 void DrawObject()
 {
+    for (const auto& object : Player)
+    {
+        if (object.is_active)
+        {
+            /*Draw*/
+        }
+    }
 
+    for (const auto& object : Item)
+    {
+        if (object.is_active)
+        {
+            /*Draw*/
+        }
+    }
 }
