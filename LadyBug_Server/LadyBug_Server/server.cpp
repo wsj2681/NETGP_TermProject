@@ -102,7 +102,12 @@ int main(int argc, char* argv[])
 
     while (1) {
 
-
+        client_addr_len = sizeof(client_addr);
+        client_sock = accept(listen_sock, (SOCKADDR*)&client_addr, &client_addr_len);
+        if (client_sock == INVALID_SOCKET) {
+            err_display("accept()");
+            break;
+        }
 
 
         cout << "\n[TCP 서버] 클라이언트 접속: IP 주소= " 
