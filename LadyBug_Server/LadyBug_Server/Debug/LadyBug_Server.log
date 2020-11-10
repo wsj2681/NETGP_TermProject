@@ -1,0 +1,6 @@
+﻿  server.cpp
+C:\Users\gkaqj\Desktop\네트워크 게임 프로그래밍\Github\NETGP_TermProject\LadyBug_Server\LadyBug_Server\server.cpp(76,12): warning C4101: 'client_sock' :참조되지 않은 지역 변수입니다.
+C:\Users\gkaqj\Desktop\네트워크 게임 프로그래밍\Github\NETGP_TermProject\LadyBug_Server\LadyBug_Server\server.cpp(79,10): warning C4101: 'buf' :참조되지 않은 지역 변수입니다.
+C:\Users\gkaqj\Desktop\네트워크 게임 프로그래밍\Github\NETGP_TermProject\LadyBug_Server\LadyBug_Server\server.cpp(77,17): warning C4101: 'client_addr' :참조되지 않은 지역 변수입니다.
+C:\Users\gkaqj\Desktop\네트워크 게임 프로그래밍\Github\NETGP_TermProject\LadyBug_Server\LadyBug_Server\server.cpp(78,9): warning C4101: 'client_addr_len' :참조되지 않은 지역 변수입니다.
+  LadyBug_Server.vcxproj -> C:\Users\gkaqj\Desktop\네트워크 게임 프로그래밍\Github\NETGP_TermProject\LadyBug_Server\Debug\LadyBug_Server.exe
