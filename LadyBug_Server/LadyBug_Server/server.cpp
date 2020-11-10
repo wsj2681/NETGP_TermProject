@@ -43,7 +43,24 @@ void err_display(char* msg)
     LocalFree(lpMsgBuf);
 }
 
+DWORD WINAPI Client_Thread(LPVOID arg) {
+    
+    //소켓 함수 리턴 값
+    int retval;
 
+    //
+    SOCKET client_sock;
+    SOCKADDR_IN client_addr;
+    int client_addr_len;
+    char buf[BUFSIZE + 1];
+    
+    //ip주소와 포트번호 담기
+    getpeername(client_sock, (SOCKADDR*)&client_addr, &client_addr_len);
+
+
+    if (retval == 0)
+        return 0;
+}
 
 
 int main(int argc, char* argv[])
@@ -78,9 +95,30 @@ int main(int argc, char* argv[])
     int client_addr_len;
     char buf[BUFSIZE + 1];
 
+    HANDLE hThread;
     
 
     cout << "서버 구동중~~~" << endl;
+
+    while (1) {
+
+
+
+
+        cout << "\n[TCP 서버] 클라이언트 접속: IP 주소= " 
+            << inet_ntoa(client_addr.sin_addr) // 클라이언트 주소 네트워크 바이트 정렬
+            << ", 포트 번호=" << ntohs(client_addr.sin_port) << endl; // 포트번호 네트워크바이트 정렬
+
+        //쓰레드 생성
+        hThread = CreateThread(NULL, 0, Client_Thread, (LPVOID)client_sock, 0, NULL);
+        if (hThread == NULL) {
+            closesocket(client_sock);
+        }
+        else {
+            CloseHandle(hThread);
+        }
+
+    }
     
 
     // closesocket()
