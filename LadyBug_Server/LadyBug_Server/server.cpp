@@ -43,6 +43,23 @@ void err_display(char* msg)
     LocalFree(lpMsgBuf);
 }
 
+int sendDate(SOCKET s, char* buf, int len, int flags) {
+    
+    //송신 반환값
+    int sended;
+    // 버퍼
+    char* ptr = buf;
+    // 송신 길이
+    int sendlen = len;
+
+    sended = send(s, ptr, sendlen, flags);
+
+    /////////////////////////////////////////////
+    // 이후 송신 클래스 생성시 작성할 부분   ////
+    /////////////////////////////////////////////
+
+}
+
 DWORD WINAPI Client_Thread(LPVOID arg) {
     
     //소켓 함수 리턴 값
