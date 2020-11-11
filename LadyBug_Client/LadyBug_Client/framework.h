@@ -33,4 +33,12 @@ struct InputFlag
 	unsigned char DOWN : 1;
 	unsigned char RIGHT : 1;
 	unsigned char LEFT : 1;
+
+	void Init()
+	{
+		UP = 0;
+		DOWN = 0;
+		RIGHT = 0;
+		LEFT = 0;
+	}
 };
