@@ -31,7 +31,21 @@ struct Object
 {
     float x = 0.f;
     float y = 0.f;
+    
+    int width = 0;
+    int height = 0;
+
+    int picX = 0;
+    int picY = 0;
+    int picWidth = 0;
+    int picHeight = 0;
+
+    int moveX = 0;
+    int moveY = 0;
+    
     bool is_active = true;
+
+
     CImage image;
 };
 
@@ -40,13 +54,13 @@ bool KeyInput[4] = { false, false, false, false };
 InputFlag input;
 
 CImage imageBackBuffer;
-CImage imageBackGround;
+Object BackGround;
 CImage imageGameStart;
 CImage imageGameResult;
 
 Object Player[2];
 
-Object Monster;
+Object Monster[3];
 
 Object Item[2];
 
@@ -60,7 +74,7 @@ void ResultState();
 void SendtoServer(const SOCKET& sock, const bool keyInput[]);
 void RecvtoServer(const SOCKET& sock);
 
-void DrawObject();
+void DrawObject(HDC memDC);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -96,8 +110,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     //if (returnvalue == SOCKET_ERROR)
     //    return 1;/*err_quit("connect()")*/
 
-    //게임 객체를 초기화 합니다.
-    GameInit();
 
     // 전역 문자열을 초기화합니다.
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
@@ -169,8 +181,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
 
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+   HWND hWnd = CreateWindowW(szWindowClass, L"LadyBug", WS_OVERLAPPEDWINDOW,
+      CW_USEDEFAULT, 0, 500, 800, nullptr, nullptr, hInstance, nullptr);
 
    if (!hWnd)
    {
@@ -195,23 +207,20 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    cout << input.UP << input.DOWN << input.LEFT << input.RIGHT << " - "<<sizeof(input)<<endl;
-    input.UP = 0;
-    input.DOWN = 0;
-    input.LEFT = 0;
-    input.RIGHT = 0;
+    HDC hDC, memDC;
+    PAINTSTRUCT paint;
+    static HBITMAP hBit, oldBit;
+
+    HPEN hPen, oldPen;
+    HBRUSH hBrush, oldBrush;
+
+    input.Init();
+
     switch (message)
     {
     case WM_CREATE:
         GameInit();
         break;
-    case WM_CHAR:
-        switch (wParam)
-        {
-        case 'x':
-            cout << "되잖아" << endl;
-            break;
-        }
     case WM_KEYDOWN:
         switch (wParam)
         {
@@ -227,13 +236,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         case VK_RIGHT:
             input.RIGHT = 1;
             break;
-        case VK_SPACE:
-                KeyInput[0] = true;
-            break;
         default:
             break;
         }
-
+        
     case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
@@ -253,10 +259,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     case WM_PAINT:
         {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hWnd, &ps);
-            // TODO: 여기에 hdc를 사용하는 그리기 코드를 추가합니다...
-            EndPaint(hWnd, &ps);
+            hDC = BeginPaint(hWnd, &paint);
+            memDC = CreateCompatibleDC(hDC);
+
+            hBit = CreateCompatibleBitmap(hDC, 1000, 800);
+            SelectObject(memDC, hBit);
+            
+            DrawObject(memDC);
+
+            BitBlt(hDC, 0, 0, 500, 800, memDC, 0, 0, SRCCOPY);
+            DeleteObject(hBit);
+            DeleteDC(memDC);
+            EndPaint(hWnd, &paint);
+
         }
         break;
     case WM_DESTROY:
@@ -294,18 +309,47 @@ void GameInit()
 
     imageBackBuffer.Load(_TEXT(""));
     
-    imageBackGround.Load(_TEXT(""));
     
-    Player[0].image.Load(_TEXT(""));
-    Player[0].image.Load(_TEXT(""));
+    BackGround.image.Load(_TEXT("Images/BackGround.bmp"));
+    BackGround.x = 0;
+    BackGround.y = 0;
+    BackGround.width = 500;
+    BackGround.height = 800;
 
-    Monster.image.Load(_TEXT(""));
+    BackGround.picX = 0;
+    BackGround.picY = 0;
+    BackGround.picWidth = 500;
+    BackGround.picHeight = 800;
+
+    Player[0].image.Load(_TEXT("Images/Player1.bmp"));
+    Player[0].x = 235;
+    Player[0].y = 650;
+    Player[0].width = 30;
+    Player[0].height = 30;
+    Player[0].picWidth = 76;
+    Player[0].picHeight = 74;
+
+    Player[1].image.Load(_TEXT("Images/Player2.png"));
+    Player[1].x = 230;
+    Player[1].y = 500;
+    Player[1].width = 30;
+    Player[1].height = 30;
+    Player[1].picWidth = 76;
+    Player[1].picHeight = 74;
+
+    Monster[0].image.Load(_TEXT("Images/Monster.bmp"));
+    Monster[0].x = 230;
+    Monster[0].y = 100;
+    Monster[0].width = 30;
+    Monster[0].height = 30;
+    Monster[0].picWidth = 76;
+    Monster[0].picHeight = 74;
 
     Item[0].image.Load(_TEXT(""));
     Item[1].image.Load(_TEXT(""));
 
     imageGameStart.Load(_TEXT(""));
-    imageGameResult.Load(_TEXT(""));
+    imageGameResult.Load(_TEXT("Images/Result.png"));
 
     imageBackBuffer.Create(700, 480, 24, 0);
 
@@ -327,7 +371,6 @@ void MainGameState()
 
 void MainGameState(const SOCKET& sock)
 {
-    DrawObject();
     SendtoServer(sock,NULL);
     RecvtoServer(sock);
 }
@@ -345,13 +388,23 @@ void RecvtoServer(const SOCKET& sock)
 {
 }
 
-void DrawObject()
+void DrawObject(HDC memDC)
 {
+    BackGround.image.Draw(memDC, BackGround.x, BackGround.y, BackGround.width, BackGround.height, BackGround.picX, BackGround.picY, BackGround.picWidth, BackGround.picHeight);
+
     for (const auto& object : Player)
     {
         if (object.is_active)
         {
-            /*Draw*/
+            object.image.Draw(memDC, object.x, object.y, object.width, object.height, object.picX, object.picY, object.picWidth, object.picHeight);
+        }
+    }
+
+    for (const auto& object : Monster)
+    {
+        if (object.is_active)
+        {
+            //object.image.Draw(memDC, object.x, object.y, object.width, object.height, object.picX, object.picY, object.picWidth, object.picHeight);
         }
     }
 
