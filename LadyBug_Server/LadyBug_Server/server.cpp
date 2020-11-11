@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
+#include <random>
 
 
 
@@ -14,6 +15,12 @@ constexpr int SERVERPORT = 9000;
 
 using namespace std;
 
+//ID랜덤을 위한 변수설정
+default_random_engine dre;
+uniform_int_distribution<>uid(1, 100);
+
+int randomFirstID = 0;
+int randomSecondID = 0;
 
 
 // 소켓 함수 오류 출력 후 종료
@@ -41,6 +48,30 @@ void err_display(char* msg)
         (LPTSTR)&lpMsgBuf, 0, NULL);
     printf("[%s] %s", msg, (char*)lpMsgBuf);
     LocalFree(lpMsgBuf);
+}
+
+int sendID(SOCKET s, int len, int flags) {
+
+    
+    int randomID = uid(dre);
+    if (randomFirstID == 0)
+        randomFirstID = randomID;
+    else if (randomSecondID == 0)
+        randomSecondID = randomID;
+
+    //송신 반환값
+    int sended;
+    // 버퍼
+    char* ptr = (char*)&randomID;
+    // 송신 길이
+    int sendlen = sizeof(randomID);
+
+    sended = send(s, ptr, sendlen, flags);
+
+    /////////////////////////////////////////////
+    // 이후 송신 클래스 생성시 작성할 부분   ////
+    /////////////////////////////////////////////
+
 }
 
 int sendDate(SOCKET s, char* buf, int len, int flags) {
@@ -74,6 +105,8 @@ DWORD WINAPI Client_Thread(LPVOID arg) {
     //ip주소와 포트번호 담기
     getpeername(client_sock, (SOCKADDR*)&client_addr, &client_addr_len);
 
+    //Id 보내기  - 공유자원 임으로 임게영역 설정해야함
+    sendID(client_sock, client_addr_len, 0);
 
     if (retval == 0)
         return 0;
@@ -121,6 +154,9 @@ int main(int argc, char* argv[])
 
         client_addr_len = sizeof(client_addr);
         client_sock = accept(listen_sock, (SOCKADDR*)&client_addr, &client_addr_len);
+
+        
+
         if (client_sock == INVALID_SOCKET) {
             err_display("accept()");
             break;
