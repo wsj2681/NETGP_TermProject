@@ -91,6 +91,28 @@ int sendDate(SOCKET s, char* buf, int len, int flags) {
 
 }
 
+int recvn(SOCKET s, char* buf, int len, int flags)
+{
+    int received;
+    char* ptr = buf;
+    int left = len;
+
+    while (left > 0) {
+        received = recv(s, ptr, left, flags);
+        //오류 일떄
+        if (received == SOCKET_ERROR)
+            return SOCKET_ERROR;
+        //더이상 데이터를 받아오지 못할떄
+        else if (received == 0)
+            break;
+        // 데이터 존재시 
+        left -= received; //남은 데이터양
+        ptr += received;  //읽어온 데이터
+    }
+
+    return (len - left);
+}
+
 DWORD WINAPI Client_Thread(LPVOID arg) {
     
     //소켓 함수 리턴 값
