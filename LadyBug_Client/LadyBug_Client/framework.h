@@ -41,4 +41,11 @@ struct InputFlag
 		RIGHT = 0;
 		LEFT = 0;
 	}
+	friend ostream& operator<<(ostream& os, const InputFlag& input);
 };
+
+ostream& operator<<(ostream& os, const InputFlag& input)
+{
+	os << input.UP << " " << input.DOWN << " " << input.LEFT << " " << input.RIGHT;
+	return os; 
+}
