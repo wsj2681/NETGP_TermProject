@@ -207,15 +207,14 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    HDC hDC, memDC;
+    cout << input << endl;
+    HDC hDC, memDC, tempDC;
     PAINTSTRUCT paint;
     static HBITMAP hBit, oldBit;
 
-    HPEN hPen, oldPen;
-    HBRUSH hBrush, oldBrush;
 
     input.Init();
-
+    InvalidateRect(hWnd, nullptr, true);
     switch (message)
     {
     case WM_CREATE:
@@ -225,15 +224,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         switch (wParam)
         {
         case VK_UP:
+            Player[0].y -= 5.f;
             input.UP = 1;
             break;
         case VK_DOWN:
+            Player[0].y += 5.f;
             input.DOWN = 1;
             break;
         case VK_LEFT:
+            Player[0].x -= 5.f;
             input.LEFT = 1;
             break;
         case VK_RIGHT:
+            Player[0].x += 5.f;
             input.RIGHT = 1;
             break;
         default:
@@ -266,7 +269,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             SelectObject(memDC, hBit);
             
             DrawObject(memDC);
-
+            
             BitBlt(hDC, 0, 0, 500, 800, memDC, 0, 0, SRCCOPY);
             DeleteObject(hBit);
             DeleteDC(memDC);
