@@ -29,10 +29,10 @@ using namespace std;
 
 struct InputFlag
 {
-	unsigned char UP : 1;
-	unsigned char DOWN : 1;
-	unsigned char RIGHT : 1;
-	unsigned char LEFT : 1;
+	unsigned char UP : 1;	// 0x01
+	unsigned char DOWN : 1;	// 0x02
+	unsigned char RIGHT : 1;// 0x04
+	unsigned char LEFT : 1;	// 0x08
 
 	void Init()
 	{
@@ -41,7 +41,9 @@ struct InputFlag
 		RIGHT = 0;
 		LEFT = 0;
 	}
+	
 	friend ostream& operator<<(ostream& os, const InputFlag& input);
+	
 };
 
 ostream& operator<<(ostream& os, const InputFlag& input)

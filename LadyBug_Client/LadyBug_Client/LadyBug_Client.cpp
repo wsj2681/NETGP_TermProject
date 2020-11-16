@@ -11,6 +11,12 @@
 
 #define MAX_LOADSTRING 100
 
+constexpr char UP = 0x01;
+constexpr char DOWN = 0x02;
+constexpr char LEFT = 0x04;
+constexpr char RIGHT = 0x08;
+constexpr char IDLE = 0x00;
+
 //TODO : local ip -> network ip
 const char* SERVERIP = "127.0.0.1";
 constexpr int SERVERPORT = 9000;
@@ -45,8 +51,6 @@ struct Object
     CImage image;
 };
 
-bool KeyInput[4] = { false, false, false, false };
-
 InputFlag input;
 
 Object BackGround;
@@ -59,6 +63,8 @@ Object Monster[3];
 
 Object Item[2];
 
+SOCKET sock;
+
 void GameInit();
 void GameRelease();
 
@@ -66,8 +72,8 @@ void LobbyState();
 void MainGameState();
 void ResultState();
 
-void SendtoServer(const SOCKET& sock, const bool keyInput[]);
-void RecvtoServer(const SOCKET& sock);
+void SendtoServer();
+void RecvfromServer(const InputFlag& input);
 
 void DrawObject(HDC memDC);
 
@@ -89,7 +95,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return 1;
 
     //소켓을 생성합니다.
-    SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock == INVALID_SOCKET)
         return 1;/*err_quit("socket()")*/
 
@@ -213,6 +219,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         GameInit();
         break;
     case WM_KEYDOWN:
+        if (wParam == VK_UP)
+            input.UP = 1;
+        else if (wParam == VK_DOWN)
+            input.DOWN = 1;
+        else if (wParam == VK_LEFT)
+            input.DOWN = 1;
+        else if (wParam == VK_RIGHT)
+            input.DOWN = 1;
+
+        //RecvfromServer(input);
+
         switch (wParam)
         {
         case VK_UP:
@@ -368,8 +385,8 @@ void MainGameState()
 
 void MainGameState(const SOCKET& sock)
 {
-    SendtoServer(sock,NULL);
-    RecvtoServer(sock);
+    //SendtoServer();
+    //RecvfromServer();
 }
 
 void ResultState()
@@ -377,12 +394,23 @@ void ResultState()
 
 }
 
-void SendtoServer(const SOCKET& sock, const bool keyInput[])
+void SendtoServer(const InputFlag& input)
 {
+    if (input.UP == 1)
+        send(sock, (char*)UP, sizeof(char*), 0);
+    else if (input.DOWN == 1)
+        send(sock, (char*)UP, sizeof(char*), 0);
+    else if (input.LEFT == 1)
+        send(sock, (char*)UP, sizeof(char*), 0);
+    else if (input.RIGHT == 1)
+        send(sock, (char*)UP, sizeof(char*), 0);
+    else
+        send(sock, (char*)IDLE, sizeof(char*), 0);
 }
 
-void RecvtoServer(const SOCKET& sock)
+void RecvfromServer()
 {
+
 }
 
 void DrawObject(HDC memDC)
