@@ -208,13 +208,10 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     cout << input << endl;
-    HDC hDC, memDC, tempDC;
     PAINTSTRUCT paint;
-    static HBITMAP hBit, oldBit;
-
 
     input.Init();
-    InvalidateRect(hWnd, nullptr, true);
+    InvalidateRect(hWnd, nullptr, false);
     switch (message)
     {
     case WM_CREATE:
@@ -262,21 +259,29 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     case WM_PAINT:
         {
-            hDC = BeginPaint(hWnd, &paint);
-            memDC = CreateCompatibleDC(hDC);
+            /** 더블버퍼링 시작처리입니다. **/
+            static HDC hdc, MemDC;
+            static HBITMAP BackBit, oldBackBit;
+            static RECT bufferRT;
+            MemDC = BeginPaint(hWnd, &paint);
 
-            hBit = CreateCompatibleBitmap(hDC, 1000, 800);
-            SelectObject(memDC, hBit);
-            
-            DrawObject(memDC);
-            
-            BitBlt(hDC, 0, 0, 500, 800, memDC, 0, 0, SRCCOPY);
-            DeleteObject(hBit);
-            DeleteDC(memDC);
+            GetClientRect(hWnd, &bufferRT);
+            hdc = CreateCompatibleDC(MemDC);
+            BackBit = CreateCompatibleBitmap(MemDC, bufferRT.right, bufferRT.bottom);
+            oldBackBit = (HBITMAP)SelectObject(hdc, BackBit);
+            PatBlt(hdc, 0, 0, bufferRT.right, bufferRT.bottom, WHITENESS);
+
+            DrawObject(MemDC);
+
+            /** 더블버퍼링 끝처리 입니다. **/
+            GetClientRect(hWnd, &bufferRT);
+            BitBlt(MemDC, 0, 0, bufferRT.right, bufferRT.bottom, hdc, 0, 0, SRCCOPY);
+            SelectObject(hdc, oldBackBit);
+            DeleteObject(BackBit);
+            DeleteDC(hdc);
             EndPaint(hWnd, &paint);
-
+            break;         
         }
-        break;
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
