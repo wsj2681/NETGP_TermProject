@@ -40,11 +40,7 @@ struct Object
     int picWidth = 0;
     int picHeight = 0;
 
-    int moveX = 0;
-    int moveY = 0;
-    
     bool is_active = true;
-
 
     CImage image;
 };
@@ -53,7 +49,6 @@ bool KeyInput[4] = { false, false, false, false };
 
 InputFlag input;
 
-CImage imageBackBuffer;
 Object BackGround;
 CImage imageGameStart;
 CImage imageGameResult;
@@ -313,17 +308,11 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 void GameInit()
 {
-    
-
-    imageBackBuffer.Load(_TEXT(""));
-    
-    
     BackGround.image.Load(_TEXT("Images/BackGround.bmp"));
     BackGround.x = 0;
     BackGround.y = 0;
     BackGround.width = 500;
     BackGround.height = 800;
-
     BackGround.picX = 0;
     BackGround.picY = 0;
     BackGround.picWidth = 500;
@@ -345,22 +334,22 @@ void GameInit()
     Player[1].picWidth = 76;
     Player[1].picHeight = 74;
 
-    Monster[0].image.Load(_TEXT("Images/Monster.bmp"));
-    Monster[0].x = 230;
-    Monster[0].y = 100;
-    Monster[0].width = 30;
-    Monster[0].height = 30;
-    Monster[0].picWidth = 76;
-    Monster[0].picHeight = 74;
-
+    for (int i = 0; i < 3; ++i)
+    {
+        Monster[i].image.Load(_TEXT("Images/Monster.bmp"));
+        Monster[i].x = 230;
+        Monster[i].y = 100 + i*30;
+        Monster[i].width = 30;
+        Monster[i].height = 30;
+        Monster[i].picWidth = 76;
+        Monster[i].picHeight = 74;
+    }
+   
     Item[0].image.Load(_TEXT(""));
     Item[1].image.Load(_TEXT(""));
 
     imageGameStart.Load(_TEXT(""));
     imageGameResult.Load(_TEXT("Images/Result.png"));
-
-    imageBackBuffer.Create(700, 480, 24, 0);
-
 }
 
 void GameRelease()
@@ -412,7 +401,7 @@ void DrawObject(HDC memDC)
     {
         if (object.is_active)
         {
-            //object.image.Draw(memDC, object.x, object.y, object.width, object.height, object.picX, object.picY, object.picWidth, object.picHeight);
+            object.image.Draw(memDC, object.x, object.y, object.width, object.height, object.picX, object.picY, object.picWidth, object.picHeight);
         }
     }
 
