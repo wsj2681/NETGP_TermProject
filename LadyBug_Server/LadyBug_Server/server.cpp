@@ -23,6 +23,27 @@ int randomFirstID = 0;
 int randomSecondID = 0;
 
 
+//Player
+class Player {
+    int palyerX;
+    int platerY;
+
+    int playerID;
+
+};
+//Monster
+class Monster {
+    int monsterX;
+    int monsterY;
+
+};
+// iTem
+class Item {
+    int itemX;
+    int itemY;
+
+};
+
 // 소켓 함수 오류 출력 후 종료
 void err_quit(char* msg)
 {
