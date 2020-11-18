@@ -92,6 +92,7 @@ int sendID(SOCKET s, int len, int flags) {
     /////////////////////////////////////////////
     // 이후 송신 클래스 생성시 작성할 부분   ////
     /////////////////////////////////////////////
+    return len;
 
 }
 
@@ -109,7 +110,7 @@ int sendDate(SOCKET s, char* buf, int len, int flags) {
     /////////////////////////////////////////////
     // 이후 송신 클래스 생성시 작성할 부분   ////
     /////////////////////////////////////////////
-
+    return len;
 }
 
 int recvn(SOCKET s, char* buf, int len, int flags)
