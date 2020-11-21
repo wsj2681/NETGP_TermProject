@@ -11,6 +11,12 @@
 
 #define MAX_LOADSTRING 100
 
+constexpr char UP = 0x01;
+constexpr char DOWN = 0x02;
+constexpr char LEFT = 0x04;
+constexpr char RIGHT = 0x08;
+constexpr char IDLE = 0x00;
+
 //TODO : local ip -> network ip
 const char* SERVERIP = "127.0.0.1";
 constexpr int SERVERPORT = 9000;
@@ -40,20 +46,13 @@ struct Object
     int picWidth = 0;
     int picHeight = 0;
 
-    int moveX = 0;
-    int moveY = 0;
-    
     bool is_active = true;
-
 
     CImage image;
 };
 
-bool KeyInput[4] = { false, false, false, false };
-
 InputFlag input;
 
-CImage imageBackBuffer;
 Object BackGround;
 CImage imageGameStart;
 CImage imageGameResult;
@@ -64,6 +63,8 @@ Object Monster[3];
 
 Object Item[2];
 
+SOCKET sock;
+
 void GameInit();
 void GameRelease();
 
@@ -71,8 +72,8 @@ void LobbyState();
 void MainGameState();
 void ResultState();
 
-void SendtoServer(const SOCKET& sock, const bool keyInput[]);
-void RecvtoServer(const SOCKET& sock);
+void SendtoServer();
+void RecvfromServer(const InputFlag& input);
 
 void DrawObject(HDC memDC);
 
@@ -94,7 +95,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return 1;
 
     //소켓을 생성합니다.
-    SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock == INVALID_SOCKET)
         return 1;/*err_quit("socket()")*/
 
@@ -208,19 +209,27 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     cout << input << endl;
-    HDC hDC, memDC, tempDC;
     PAINTSTRUCT paint;
-    static HBITMAP hBit, oldBit;
-
 
     input.Init();
-    InvalidateRect(hWnd, nullptr, true);
+    InvalidateRect(hWnd, nullptr, false);
     switch (message)
     {
     case WM_CREATE:
         GameInit();
         break;
     case WM_KEYDOWN:
+        if (wParam == VK_UP)
+            input.UP = 1;
+        else if (wParam == VK_DOWN)
+            input.DOWN = 1;
+        else if (wParam == VK_LEFT)
+            input.DOWN = 1;
+        else if (wParam == VK_RIGHT)
+            input.DOWN = 1;
+
+        //RecvfromServer(input);
+
         switch (wParam)
         {
         case VK_UP:
@@ -262,21 +271,29 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     case WM_PAINT:
         {
-            hDC = BeginPaint(hWnd, &paint);
-            memDC = CreateCompatibleDC(hDC);
+            /** 더블버퍼링 시작처리입니다. **/
+            static HDC hdc, MemDC;
+            static HBITMAP BackBit, oldBackBit;
+            static RECT bufferRT;
+            MemDC = BeginPaint(hWnd, &paint);
 
-            hBit = CreateCompatibleBitmap(hDC, 1000, 800);
-            SelectObject(memDC, hBit);
-            
-            DrawObject(memDC);
-            
-            BitBlt(hDC, 0, 0, 500, 800, memDC, 0, 0, SRCCOPY);
-            DeleteObject(hBit);
-            DeleteDC(memDC);
+            GetClientRect(hWnd, &bufferRT);
+            hdc = CreateCompatibleDC(MemDC);
+            BackBit = CreateCompatibleBitmap(MemDC, bufferRT.right, bufferRT.bottom);
+            oldBackBit = (HBITMAP)SelectObject(hdc, BackBit);
+            PatBlt(hdc, 0, 0, bufferRT.right, bufferRT.bottom, WHITENESS);
+
+            DrawObject(MemDC);
+
+            /** 더블버퍼링 끝처리 입니다. **/
+            GetClientRect(hWnd, &bufferRT);
+            BitBlt(MemDC, 0, 0, bufferRT.right, bufferRT.bottom, hdc, 0, 0, SRCCOPY);
+            SelectObject(hdc, oldBackBit);
+            DeleteObject(BackBit);
+            DeleteDC(hdc);
             EndPaint(hWnd, &paint);
-
+            break;         
         }
-        break;
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
@@ -308,17 +325,11 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 void GameInit()
 {
-    
-
-    imageBackBuffer.Load(_TEXT(""));
-    
-    
     BackGround.image.Load(_TEXT("Images/BackGround.bmp"));
     BackGround.x = 0;
     BackGround.y = 0;
     BackGround.width = 500;
     BackGround.height = 800;
-
     BackGround.picX = 0;
     BackGround.picY = 0;
     BackGround.picWidth = 500;
@@ -340,22 +351,22 @@ void GameInit()
     Player[1].picWidth = 76;
     Player[1].picHeight = 74;
 
-    Monster[0].image.Load(_TEXT("Images/Monster.bmp"));
-    Monster[0].x = 230;
-    Monster[0].y = 100;
-    Monster[0].width = 30;
-    Monster[0].height = 30;
-    Monster[0].picWidth = 76;
-    Monster[0].picHeight = 74;
-
+    for (int i = 0; i < 3; ++i)
+    {
+        Monster[i].image.Load(_TEXT("Images/Monster.bmp"));
+        Monster[i].x = 230;
+        Monster[i].y = 100 + i*30;
+        Monster[i].width = 30;
+        Monster[i].height = 30;
+        Monster[i].picWidth = 76;
+        Monster[i].picHeight = 74;
+    }
+   
     Item[0].image.Load(_TEXT(""));
     Item[1].image.Load(_TEXT(""));
 
     imageGameStart.Load(_TEXT(""));
     imageGameResult.Load(_TEXT("Images/Result.png"));
-
-    imageBackBuffer.Create(700, 480, 24, 0);
-
 }
 
 void GameRelease()
@@ -374,8 +385,8 @@ void MainGameState()
 
 void MainGameState(const SOCKET& sock)
 {
-    SendtoServer(sock,NULL);
-    RecvtoServer(sock);
+    //SendtoServer();
+    //RecvfromServer();
 }
 
 void ResultState()
@@ -383,12 +394,23 @@ void ResultState()
 
 }
 
-void SendtoServer(const SOCKET& sock, const bool keyInput[])
+void SendtoServer(const InputFlag& input)
 {
+    if (input.UP == 1)
+        send(sock, (char*)UP, sizeof(char*), 0);
+    else if (input.DOWN == 1)
+        send(sock, (char*)UP, sizeof(char*), 0);
+    else if (input.LEFT == 1)
+        send(sock, (char*)UP, sizeof(char*), 0);
+    else if (input.RIGHT == 1)
+        send(sock, (char*)UP, sizeof(char*), 0);
+    else
+        send(sock, (char*)IDLE, sizeof(char*), 0);
 }
 
-void RecvtoServer(const SOCKET& sock)
+void RecvfromServer()
 {
+
 }
 
 void DrawObject(HDC memDC)
@@ -407,7 +429,7 @@ void DrawObject(HDC memDC)
     {
         if (object.is_active)
         {
-            //object.image.Draw(memDC, object.x, object.y, object.width, object.height, object.picX, object.picY, object.picWidth, object.picHeight);
+            object.image.Draw(memDC, object.x, object.y, object.width, object.height, object.picX, object.picY, object.picWidth, object.picHeight);
         }
     }
 

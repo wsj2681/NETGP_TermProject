@@ -21,7 +21,10 @@ uniform_int_distribution<>uid(1, 100);
 
 int randomFirstID = 0;
 int randomSecondID = 0;
+char ready[2] = { 0 };
+char gameStart = 1;
 
+CRITICAL_SECTION cs; // 임계 영역
 
 //Player
 class Player {
@@ -71,7 +74,7 @@ void err_display(char* msg)
     LocalFree(lpMsgBuf);
 }
 
-int sendID(SOCKET s, int len, int flags) {
+void sendID(SOCKET s, int len, int flags) {
 
     
     int randomID = uid(dre);
@@ -88,11 +91,6 @@ int sendID(SOCKET s, int len, int flags) {
     int sendlen = sizeof(randomID);
 
     sended = send(s, ptr, sendlen, flags);
-
-    /////////////////////////////////////////////
-    // 이후 송신 클래스 생성시 작성할 부분   ////
-    /////////////////////////////////////////////
-    return len;
 
 }
 
@@ -146,14 +144,54 @@ DWORD WINAPI Client_Thread(LPVOID arg) {
     int client_addr_len;
     char buf[BUFSIZE + 1];
     
+    ZeroMemory(&buf, sizeof(buf));
+
     //ip주소와 포트번호 담기
     getpeername(client_sock, (SOCKADDR*)&client_addr, &client_addr_len);
 
+    EnterCriticalSection(&cs);
     //Id 보내기  - 공유자원 임으로 임게영역 설정해야함
     sendID(client_sock, client_addr_len, 0);
+    LeaveCriticalSection(&cs);
+
+    int clientId = 0;
+
+    //클라이언트 아이디 받기
+    recvn(client_sock, (char*)&clientId, sizeof(clientId), 0);
+
+
+
+    //EnterCriticalSection(&cs);
+    // 준비 상태 받기
+    if (clientId ==randomFirstID &&  ready[0] == 0) {
+        retval = recvn(client_sock, (char*)&ready[0], sizeof(ready[0]), 0);
+        
+    }
+    else if (clientId == randomSecondID && ready[1] == 0) {
+
+       
+        retval = recvn(client_sock, (char*)&ready[1], sizeof(ready[1]), 0);
+       
+
+    }
+    //LeaveCriticalSection(&cs);
+    //더이상 받을 데이터가 없을떄
+
+    //준비 완료됫다면 게임 시작 보내기
+    if (ready[0] != 0 && ready[1] != 0)
+        send(client_sock, (char*)&gameStart, sizeof(gameStart), 0);
+
+    // 게임 시작
+    while (ready[0] != 0 && ready[1] != 0) {
+    
+
+
+    }
 
     if (retval == 0)
         return 0;
+
+
 }
 
 
