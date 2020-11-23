@@ -63,6 +63,8 @@ Object Monster[3];
 
 Object Item[2];
 
+bool GameEnd = false;
+
 SOCKET sock;
 
 void GameInit();
@@ -76,6 +78,8 @@ void SendtoServer();
 void RecvfromServer(const InputFlag& input);
 
 void DrawObject(HDC memDC);
+
+void GameTimer();
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -133,6 +137,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
         {
             TranslateMessage(&msg);
+            
             DispatchMessage(&msg);
         }
     }
@@ -227,7 +232,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             input.DOWN = 1;
         else if (wParam == VK_RIGHT)
             input.DOWN = 1;
-
+       
         //RecvfromServer(input);
 
         switch (wParam)
