@@ -19,6 +19,12 @@ using namespace std;
 default_random_engine dre;
 uniform_int_distribution<>uid(1, 100);
 
+uniform_int_distribution<>PositionX(0, 500);
+uniform_int_distribution<>PositionY(0, 300);
+
+uniform_int_distribution<>MoveX(-4, +4);
+uniform_int_distribution<>MoveY(-4, +4);
+
 int randomFirstID = 0;
 int randomSecondID = 0;
 char ready[2] = { 0 };
@@ -26,26 +32,43 @@ char gameStart = 1;
 
 CRITICAL_SECTION cs; // 임계 영역
 
-//Player
-class Player {
-    int palyerX;
-    int platerY;
+struct Object
+{
+    float x, y;
 
-    int playerID;
+    int width = 30;
+    int height = 30;
 
+    bool isCollide = false;
+
+    bool isActive = true;
 };
-//Monster
-class Monster {
-    int monsterX;
-    int monsterY;
 
-};
-// iTem
-class Item {
-    int itemX;
-    int itemY;
+Object Player[2];
+Object Monster[10];
+Object Item[2];
 
-};
+void InitObjects()
+{
+    Player[0].x = 235;
+    Player[0].y = 650;
+
+    Player[1].x = 230;
+    Player[1].y = 500;
+
+    for (auto& i : Monster)
+    {
+        i.x = PositionX(dre);
+        i.y = PositionY(dre);
+    }
+    Item[0].x = 200;
+    Item[0].y = 400;
+
+    Item[1].x = 300;
+    Item[1].y = 400;
+}
+
+
 
 // 소켓 함수 오류 출력 후 종료
 void err_quit(char* msg)
@@ -133,12 +156,71 @@ int recvn(SOCKET s, char* buf, int len, int flags)
     return (len - left);
 }
 
-Player player[2];
-Monster monster[10];
-
-void PlayerCollisionCheck()
+void ObjectCollisionCheck()
 {
     //TODO : 충돌체크 하기 위해서 이미지 사이즈 알아야함
+    for (auto& mon : Monster)
+    {
+        for (auto& pla : Player)
+        {
+            if (mon.x + mon.width >= pla.x&& mon.x <= pla.x + pla.width && mon.y + mon.height >= pla.y && mon.y <= pla.y + pla.height)
+            {
+                mon.isCollide = true;
+                pla.isCollide = true;
+            }
+        }
+    }
+}
+
+void ObjectUpdate()
+{
+    for (auto& i : Monster)
+    {
+        i.x += MoveX(dre);
+        i.y += MoveY(dre);
+    }
+
+    for (auto& i : Item)
+    {
+        i.x += MoveX(dre);
+        i.y += MoveY(dre);
+    }
+}
+
+//TODO : Player ID;
+void PlayerUpdate(char buf)
+{
+    switch (buf)
+    {
+    case 0x01:
+        // y -= 5;
+        break;
+    case 0x02:
+        // y += 5;
+        break;
+    case 0x04:
+        // x -= 5;
+        break;
+    case 0x05:
+        // y -= 5;
+        // x -= 5;
+        break;
+    case 0x06:
+        // y += 5;
+        // x -= 5;
+        break;
+    case 0x08:
+        // x += 5;
+        break;
+    case 0x09:
+        // y -= 5;
+        // x += 5;
+        break;
+    case 0x0a:
+        // y += 5;
+        // x += 5;
+        break;
+    }
 }
 
 DWORD WINAPI Client_Thread(LPVOID arg) {
@@ -193,7 +275,19 @@ DWORD WINAPI Client_Thread(LPVOID arg) {
     while (ready[0] != 0 && ready[1] != 0) {
     
 
+        //recv(buf)
+        //EnterCriticalSection(&cs);
+        //PlayerUpdate(buf);
+        //LeaveCriticalSection(&cs);
+        ObjectUpdate();
+        ObjectCollisionCheck();
+        //sendData()
 
+        if (Player->isCollide);
+            //send(Gameover)
+
+        //if (recv(CloseGame));
+            //return 0;
     }
 
     if (retval == 0)
