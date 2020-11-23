@@ -133,6 +133,14 @@ int recvn(SOCKET s, char* buf, int len, int flags)
     return (len - left);
 }
 
+Player player[2];
+Monster monster[10];
+
+void PlayerCollisionCheck()
+{
+    //TODO : 충돌체크 하기 위해서 이미지 사이즈 알아야함
+}
+
 DWORD WINAPI Client_Thread(LPVOID arg) {
     
     //소켓 함수 리턴 값
