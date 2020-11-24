@@ -1,9 +1,9 @@
 ﻿  LadyBug_Client.cpp
-C:\Users\wsj26\Desktop\NETGP_TermProject\LadyBug_Client\LadyBug_Client\LadyBug_Client.cpp(359,28): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\wsj26\Desktop\NETGP_TermProject\LadyBug_Client\LadyBug_Client\LadyBug_Client.cpp(419,58): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\wsj26\Desktop\NETGP_TermProject\LadyBug_Client\LadyBug_Client\LadyBug_Client.cpp(419,44): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\wsj26\Desktop\NETGP_TermProject\LadyBug_Client\LadyBug_Client\LadyBug_Client.cpp(425,54): warning C4244: '인수': 'const float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\wsj26\Desktop\NETGP_TermProject\LadyBug_Client\LadyBug_Client\LadyBug_Client.cpp(425,44): warning C4244: '인수': 'const float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\wsj26\Desktop\NETGP_TermProject\LadyBug_Client\LadyBug_Client\LadyBug_Client.cpp(433,54): warning C4244: '인수': 'const float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\wsj26\Desktop\NETGP_TermProject\LadyBug_Client\LadyBug_Client\LadyBug_Client.cpp(433,44): warning C4244: '인수': 'const float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  LadyBug_Client.vcxproj -> C:\Users\wsj26\Desktop\NETGP_TermProject\LadyBug_Client\Debug\LadyBug_Client.exe
+C:\Users\gkaqj\Documents\GitHub\NETGP_TermProject\LadyBug_Client\LadyBug_Client\LadyBug_Client.cpp(356,28): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\gkaqj\Documents\GitHub\NETGP_TermProject\LadyBug_Client\LadyBug_Client\LadyBug_Client.cpp(419,58): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\gkaqj\Documents\GitHub\NETGP_TermProject\LadyBug_Client\LadyBug_Client\LadyBug_Client.cpp(419,44): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\gkaqj\Documents\GitHub\NETGP_TermProject\LadyBug_Client\LadyBug_Client\LadyBug_Client.cpp(425,54): warning C4244: '인수': 'const float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\gkaqj\Documents\GitHub\NETGP_TermProject\LadyBug_Client\LadyBug_Client\LadyBug_Client.cpp(425,44): warning C4244: '인수': 'const float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\gkaqj\Documents\GitHub\NETGP_TermProject\LadyBug_Client\LadyBug_Client\LadyBug_Client.cpp(433,54): warning C4244: '인수': 'const float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\gkaqj\Documents\GitHub\NETGP_TermProject\LadyBug_Client\LadyBug_Client\LadyBug_Client.cpp(433,44): warning C4244: '인수': 'const float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  LadyBug_Client.vcxproj -> C:\Users\gkaqj\Documents\GitHub\NETGP_TermProject\LadyBug_Client\Debug\LadyBug_Client.exe

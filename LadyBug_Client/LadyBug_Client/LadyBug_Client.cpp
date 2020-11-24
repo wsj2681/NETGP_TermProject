@@ -54,6 +54,7 @@ struct Object
 InputFlag input;
 
 Object BackGround;
+CImage Backbuff;
 CImage imageGameStart;
 CImage imageGameResult;
 
@@ -202,7 +203,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 }
 
 //
-//  함수: WndProc(HWND, UINT, WPARAM, LPARAM)
+//  함수: WndProc(HWND, UINT, WPARAM, LPARAM) 
 //
 //  용도: 주 창의 메시지를 처리합니다.
 //
@@ -224,6 +225,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         GameInit();
         break;
     case WM_KEYDOWN:
+        
         if (wParam == VK_UP)
             input.UP = 1;
         else if (wParam == VK_DOWN)
@@ -276,27 +278,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     case WM_PAINT:
         {
-            /** 더블버퍼링 시작처리입니다. **/
-            static HDC hdc, MemDC;
-            static HBITMAP BackBit, oldBackBit;
-            static RECT bufferRT;
-            MemDC = BeginPaint(hWnd, &paint);
+            ////더블버퍼링
+            RECT Rclient;
+            GetClientRect(hWnd, &Rclient);
+            HDC hdc = BeginPaint(hWnd, &paint);
+            HDC memDC = Backbuff.GetDC();
 
-            GetClientRect(hWnd, &bufferRT);
-            hdc = CreateCompatibleDC(MemDC);
-            BackBit = CreateCompatibleBitmap(MemDC, bufferRT.right, bufferRT.bottom);
-            oldBackBit = (HBITMAP)SelectObject(hdc, BackBit);
-            PatBlt(hdc, 0, 0, bufferRT.right, bufferRT.bottom, WHITENESS);
+            FillRect(memDC, &Rclient, (HBRUSH)(GetStockObject(WHITE_BRUSH)));
+            DrawObject(memDC);
 
-            DrawObject(MemDC);
+            Backbuff.Draw(hdc, 0, 0);
+            Backbuff.ReleaseDC();
 
-            /** 더블버퍼링 끝처리 입니다. **/
-            GetClientRect(hWnd, &bufferRT);
-            BitBlt(MemDC, 0, 0, bufferRT.right, bufferRT.bottom, hdc, 0, 0, SRCCOPY);
-            SelectObject(hdc, oldBackBit);
-            DeleteObject(BackBit);
-            DeleteDC(hdc);
-            EndPaint(hWnd, &paint);
+           
             break;         
         }
     case WM_DESTROY:
@@ -367,6 +361,9 @@ void GameInit()
         Monster[i].picHeight = 74;
     }
    
+    //백버퍼 생성
+    Backbuff.Create(500, 800, 24, 0);
+
     Item[0].image.Load(_TEXT(""));
     Item[1].image.Load(_TEXT(""));
 
