@@ -7,13 +7,18 @@
 #include <iostream>
 #include <fstream>
 #include <random>
+#include <vector>
 
 
+using namespace std;
 
 constexpr int BUFSIZE = 512;
 constexpr int SERVERPORT = 9000;
 
-using namespace std;
+//window 창 크기
+constexpr int WINDOW_WIDTH = 500;
+constexpr int WINDOW_HEIGHT = 800;
+
 
 //ID랜덤을 위한 변수설정
 default_random_engine dre;
@@ -34,6 +39,7 @@ CRITICAL_SECTION cs; // 임계 영역
 
 struct Object
 {
+    Object(int id) :CLientID(id) {}
     float x, y;
 
     int width = 30;
@@ -42,9 +48,11 @@ struct Object
     bool isCollide = false;
 
     bool isActive = true;
+
+    int CLientID = 0;
 };
 
-Object Player[2];
+vector<Object*> Player[2];
 Object Monster[10];
 Object Item[2];
 
@@ -163,10 +171,10 @@ void ObjectCollisionCheck()
     {
         for (auto& pla : Player)
         {
-            if (mon.x + mon.width >= pla.x&& mon.x <= pla.x + pla.width && mon.y + mon.height >= pla.y && mon.y <= pla.y + pla.height)
+            if (mon.x + mon.width >= pla->x&& mon.x <= pla.x + pla.width && mon.y + mon.height >= pla.y && mon.y <= pla.y + pla.height)
             {
                 mon.isCollide = true;
-                pla.isCollide = true;
+                pla->isCollide = true;
             }
         }
     }
@@ -176,50 +184,70 @@ void ObjectUpdate()
 {
     for (auto& i : Monster)
     {
-        i.x += MoveX(dre);
-        i.y += MoveY(dre);
+        if (i.x >= 0 && i.x <= WINDOW_WIDTH&& i.y > 0 && i.y <= WINDOW_HEIGHT)
+        {
+            i.x += MoveX(dre);
+            i.y += MoveY(dre);
+        }
+        else
+        {
+            continue;// 창 밖으로 나갔을때 처리
+        }
     }
 
     for (auto& i : Item)
     {
-        i.x += MoveX(dre);
-        i.y += MoveY(dre);
+		if (i.x >= 0 && i.x <= WINDOW_WIDTH && i.y > 0 && i.y <= WINDOW_HEIGHT)
+		{
+			i.x += MoveX(dre);
+			i.y += MoveY(dre);
+		}
+		else
+		{
+			continue;// 창 밖으로 나갔을때 처리
+		}
     }
 }
 
 //TODO : Player ID;
-void PlayerUpdate(char buf)
+void PlayerUpdate(char buf, int ID)
 {
-    switch (buf)
+    for (auto& pla : Player)
     {
-    case 0x01:
-        // y -= 5;
-        break;
-    case 0x02:
-        // y += 5;
-        break;
-    case 0x04:
-        // x -= 5;
-        break;
-    case 0x05:
-        // y -= 5;
-        // x -= 5;
-        break;
-    case 0x06:
-        // y += 5;
-        // x -= 5;
-        break;
-    case 0x08:
-        // x += 5;
-        break;
-    case 0x09:
-        // y -= 5;
-        // x += 5;
-        break;
-    case 0x0a:
-        // y += 5;
-        // x += 5;
-        break;
+        if (pla.CLientID = ID)
+        {
+			switch (buf)
+			{
+			case 0x01:
+				pla.y -= 5;
+				break;
+			case 0x02:
+                pla.y += 5;
+				break;
+			case 0x04:
+                pla.x -= 5;
+				break;
+			case 0x05:
+                pla.y -= 5;
+                pla.x -= 5;
+				break;
+			case 0x06:
+                pla.y += 5;
+                pla.x -= 5;
+				break;
+			case 0x08:
+                pla.x += 5;
+				break;
+			case 0x09:
+                pla.y -= 5;
+                pla.x += 5;
+				break;
+			case 0x0a:
+                pla.y += 5;
+                pla.x += 5;
+				break;
+			}
+        }
     }
 }
 
@@ -229,7 +257,7 @@ DWORD WINAPI Client_Thread(LPVOID arg) {
     int retval;
 
     //
-    SOCKET client_sock;
+    SOCKET client_sock = (SOCKET)arg ;
     SOCKADDR_IN client_addr;
     int client_addr_len;
     char buf[BUFSIZE + 1];
@@ -244,11 +272,13 @@ DWORD WINAPI Client_Thread(LPVOID arg) {
     sendID(client_sock, client_addr_len, 0);
     LeaveCriticalSection(&cs);
 
-    int clientId = 0;
+    int clientId = uid(dre);
+    Object* player = new Object(clientId);
+    
+    
 
     //클라이언트 아이디 받기
     recvn(client_sock, (char*)&clientId, sizeof(clientId), 0);
-
 
 
     //EnterCriticalSection(&cs);
@@ -277,7 +307,7 @@ DWORD WINAPI Client_Thread(LPVOID arg) {
 
         //recv(buf)
         //EnterCriticalSection(&cs);
-        //PlayerUpdate(buf);
+        //PlayerUpdate(buf, clientId);
         //LeaveCriticalSection(&cs);
         ObjectUpdate();
         ObjectCollisionCheck();
