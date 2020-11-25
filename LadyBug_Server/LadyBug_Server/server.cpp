@@ -9,16 +9,31 @@
 #include <random>
 #include <vector>
 
-
 using namespace std;
 
+//Server value
 constexpr int BUFSIZE = 512;
 constexpr int SERVERPORT = 9000;
+
+//Thread Count
+constexpr int MAX_THREAD = 10;
 
 //window 창 크기
 constexpr int WINDOW_WIDTH = 500;
 constexpr int WINDOW_HEIGHT = 800;
 
+struct Object
+{
+    Object(int id) :CLientID(id) {}
+    Object() = default;
+
+    float x, y;
+    int width = 30;
+    int height = 30;
+    bool isCollide = false;
+    bool isActive = true;
+    int CLientID = 0;
+};
 
 //ID랜덤을 위한 변수설정
 default_random_engine dre;
@@ -36,49 +51,179 @@ char ready[2] = { 0 };
 char gameStart = 1;
 
 CRITICAL_SECTION cs; // 임계 영역
-
-struct Object
-{
-    Object(int id) :CLientID(id) {}
-    float x, y;
-
-    int width = 30;
-    int height = 30;
-
-    bool isCollide = false;
-
-    bool isActive = true;
-
-    int CLientID = 0;
-};
-
-vector<Object*> Player[2];
+vector<Object> Player;
 Object Monster[10];
 Object Item[2];
 
-void InitObjects()
+DWORD dwThreadID[MAX_THREAD];
+
+void InitObjects();
+void ObjectCollisionCheck();
+void ObjectUpdate();
+void PlayerUpdate(char buf, int ID);
+
+void err_quit(char* msg);
+void err_display(char* msg);
+void sendID(SOCKET s, int len, int flags);
+int sendData(SOCKET s, char* buf, int len, int flags);
+int recvn(SOCKET s, char* buf, int len, int flags);
+
+DWORD WINAPI Client_Thread(LPVOID arg);
+
+int main(int argc, char* argv[])
 {
-    Player[0].x = 235;
-    Player[0].y = 650;
+    int retval;
 
-    Player[1].x = 230;
-    Player[1].y = 500;
+    WSADATA wsa;
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+        return 1;
 
-    for (auto& i : Monster)
+    SOCKET listen_sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (listen_sock == INVALID_SOCKET) 
+        err_quit("socket()");
+
+    SOCKADDR_IN serveraddr;
+    ZeroMemory(&serveraddr, sizeof(serveraddr));
+    serveraddr.sin_family = AF_INET;
+    serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    serveraddr.sin_port = htons(SERVERPORT);
+    retval = bind(listen_sock, (SOCKADDR*)&serveraddr, sizeof(serveraddr));
+    if (retval == SOCKET_ERROR) 
+        err_quit("bind()");
+
+    retval = listen(listen_sock, SOMAXCONN);
+    if (retval == SOCKET_ERROR) 
+        err_quit("listen()");
+
+    SOCKET client_sock;
+    SOCKADDR_IN client_addr;
+    int client_addr_len;
+    char buf[BUFSIZE + 1];
+
+    HANDLE hThread[MAX_THREAD];
+    int threadCount = 0;
+
+    cout << "서버 구동중~~~" << endl;
+
+    while (1) 
     {
-        i.x = PositionX(dre);
-        i.y = PositionY(dre);
-    }
-    Item[0].x = 200;
-    Item[0].y = 400;
+        client_addr_len = sizeof(client_addr);
+        client_sock = accept(listen_sock, (SOCKADDR*)&client_addr, &client_addr_len);
 
-    Item[1].x = 300;
-    Item[1].y = 400;
+        if (client_sock == INVALID_SOCKET) 
+        {
+            err_display("accept()");
+            break;
+        }
+
+        cout << "\n[TCP 서버] 클라이언트 접속: IP 주소= " 
+            << inet_ntoa(client_addr.sin_addr)
+            << ", 포트 번호=" << ntohs(client_addr.sin_port) << endl;
+
+        //쓰레드 생성
+        hThread[threadCount] = CreateThread(NULL, 0, Client_Thread, (LPVOID)client_sock, 0, &dwThreadID[threadCount]);
+
+        threadCount++;
+    }
+    
+    for (auto& i : hThread)
+        CloseHandle(i);
+
+    // closesocket()
+    closesocket(listen_sock);
+
+    // 윈속 종료
+    WSACleanup();
+    return 0;
 }
 
+DWORD WINAPI Client_Thread(LPVOID arg) 
+{
+    int retval;
+
+    SOCKET client_sock = (SOCKET)arg;
+    SOCKADDR_IN client_addr;
+    int client_addr_len;
+    char buf[BUFSIZE + 1];
+
+    ZeroMemory(&buf, sizeof(buf));
+    getpeername(client_sock, (SOCKADDR*)&client_addr, &client_addr_len);
+
+    //EnterCriticalSection(&cs);
+    ////Id 보내기  - 공유자원 임으로 임게영역 설정해야함
+    //sendID(client_sock, client_addr_len, 0);
+    //LeaveCriticalSection(&cs);
+
+    Object player;
+
+    Player.push_back(player);
+
+    InitObjects();
+
+    char buffer[2];
+
+    retval = recv(client_sock, (char*)buffer, sizeof(char), 0);
+    cout << "받은 값 - " << "[" << buffer << "]" << endl;
+
+                
+    while (true)
+    {
+        ZeroMemory(&buffer, sizeof(buffer));
+        retval = recv(client_sock, (char*)buffer, sizeof(char), 0);
+        cout << "받은 값 - " << "[" << buffer << "]" << endl;
+
+    }
+
+    int clientId = uid(dre);
+
+    //클라이언트 아이디 받기
+    //recvn(client_sock, (char*)&clientId, sizeof(clientId), 0);
 
 
-// 소켓 함수 오류 출력 후 종료
+    //EnterCriticalSection(&cs);
+    // 준비 상태 받기
+    if (clientId == randomFirstID && ready[0] == 0) {
+        retval = recvn(client_sock, (char*)&ready[0], sizeof(ready[0]), 0);
+
+    }
+    else if (clientId == randomSecondID && ready[1] == 0) {
+
+
+        retval = recvn(client_sock, (char*)&ready[1], sizeof(ready[1]), 0);
+
+
+    }
+    //LeaveCriticalSection(&cs);
+    //더이상 받을 데이터가 없을떄
+
+    //준비 완료됫다면 게임 시작 보내기
+    if (ready[0] != 0 && ready[1] != 0)
+        send(client_sock, (char*)&gameStart, sizeof(gameStart), 0);
+
+    // 게임 시작
+    while (ready[0] != 0 && ready[1] != 0) 
+    {
+        //recv(buf)
+        //EnterCriticalSection(&cs);
+        //PlayerUpdate(buf, clientId);
+        //LeaveCriticalSection(&cs);
+        ObjectUpdate();
+        ObjectCollisionCheck();
+        //sendData()
+
+        //if (Player.isCollide);
+            //send(Gameover)
+
+        //if (recv(CloseGame));
+            //return 0;
+    }
+
+    if (retval == 0)
+        return 0;
+
+
+}
+
 void err_quit(char* msg)
 {
     LPVOID lpMsgBuf;
@@ -91,8 +236,6 @@ void err_quit(char* msg)
     LocalFree(lpMsgBuf);
     exit(1);
 }
-
-// 소켓 함수 오류 출력
 void err_display(char* msg)
 {
     LPVOID lpMsgBuf;
@@ -105,9 +248,117 @@ void err_display(char* msg)
     LocalFree(lpMsgBuf);
 }
 
+void InitObjects()
+{
+    for (auto i = 0; i < Player.size(); ++i)
+    {
+        Player.data()[i].x = 230 + (i * 5);
+        Player.data()[i].y = 650;
+    }
+
+    for (auto& i : Monster)
+    {
+        i.x = PositionX(dre);
+        i.y = PositionY(dre);
+    }
+
+    Item[0].x = 200;
+    Item[0].y = 400;
+
+    Item[1].x = 300;
+    Item[1].y = 400;
+}
+
+void ObjectCollisionCheck()
+{
+    //TODO : 충돌체크 하기 위해서 이미지 사이즈 알아야함
+    for (auto& mon : Monster)
+    {
+        for (auto& pla : Player)
+        {
+            if (mon.x + mon.width >= pla.x && mon.x <= pla.x + pla.width && mon.y + mon.height >= pla.y && mon.y <= pla.y + pla.height)
+            {
+                mon.isCollide = true;
+                pla.isCollide = true;
+            }
+        }
+    }
+}
+
+void ObjectUpdate()
+{
+    for (auto& i : Monster)
+    {
+        if (i.x >= 0 && i.x <= WINDOW_WIDTH && i.y > 0 && i.y <= WINDOW_HEIGHT)
+        {
+            i.x += MoveX(dre);
+            i.y += MoveY(dre);
+        }
+        else
+        {
+            continue;// 창 밖으로 나갔을때 처리
+        }
+    }
+
+    for (auto& i : Item)
+    {
+        if (i.x >= 0 && i.x <= WINDOW_WIDTH && i.y > 0 && i.y <= WINDOW_HEIGHT)
+        {
+            i.x += MoveX(dre);
+            i.y += MoveY(dre);
+        }
+        else
+        {
+            continue;// 창 밖으로 나갔을때 처리
+        }
+    }
+}
+
+void PlayerUpdate(char buf, int ID)
+{
+    //TODO : ID CHECK
+    for (auto& pla : Player)
+    {
+        if (pla.CLientID = ID)
+        {
+            switch (buf)
+            {
+            case 0x01:
+                pla.y -= 5;
+                break;
+            case 0x02:
+                pla.y += 5;
+                break;
+            case 0x04:
+                pla.x -= 5;
+                break;
+            case 0x05:
+                pla.y -= 5;
+                pla.x -= 5;
+                break;
+            case 0x06:
+                pla.y += 5;
+                pla.x -= 5;
+                break;
+            case 0x08:
+                pla.x += 5;
+                break;
+            case 0x09:
+                pla.y -= 5;
+                pla.x += 5;
+                break;
+            case 0x0a:
+                pla.y += 5;
+                pla.x += 5;
+                break;
+            }
+        }
+    }
+}
+
 void sendID(SOCKET s, int len, int flags) {
 
-    
+
     int randomID = uid(dre);
     if (randomFirstID == 0)
         randomFirstID = randomID;
@@ -124,9 +375,8 @@ void sendID(SOCKET s, int len, int flags) {
     sended = send(s, ptr, sendlen, flags);
 
 }
+int sendData(SOCKET s, char* buf, int len, int flags) {
 
-int sendDate(SOCKET s, char* buf, int len, int flags) {
-    
     //송신 반환값
     int sended;
     // 버퍼
@@ -141,7 +391,6 @@ int sendDate(SOCKET s, char* buf, int len, int flags) {
     /////////////////////////////////////////////
     return len;
 }
-
 int recvn(SOCKET s, char* buf, int len, int flags)
 {
     int received;
@@ -163,241 +412,3 @@ int recvn(SOCKET s, char* buf, int len, int flags)
 
     return (len - left);
 }
-
-void ObjectCollisionCheck()
-{
-    //TODO : 충돌체크 하기 위해서 이미지 사이즈 알아야함
-    for (auto& mon : Monster)
-    {
-        for (auto& pla : Player)
-        {
-            if (mon.x + mon.width >= pla->x&& mon.x <= pla.x + pla.width && mon.y + mon.height >= pla.y && mon.y <= pla.y + pla.height)
-            {
-                mon.isCollide = true;
-                pla->isCollide = true;
-            }
-        }
-    }
-}
-
-void ObjectUpdate()
-{
-    for (auto& i : Monster)
-    {
-        if (i.x >= 0 && i.x <= WINDOW_WIDTH&& i.y > 0 && i.y <= WINDOW_HEIGHT)
-        {
-            i.x += MoveX(dre);
-            i.y += MoveY(dre);
-        }
-        else
-        {
-            continue;// 창 밖으로 나갔을때 처리
-        }
-    }
-
-    for (auto& i : Item)
-    {
-		if (i.x >= 0 && i.x <= WINDOW_WIDTH && i.y > 0 && i.y <= WINDOW_HEIGHT)
-		{
-			i.x += MoveX(dre);
-			i.y += MoveY(dre);
-		}
-		else
-		{
-			continue;// 창 밖으로 나갔을때 처리
-		}
-    }
-}
-
-//TODO : Player ID;
-void PlayerUpdate(char buf, int ID)
-{
-    for (auto& pla : Player)
-    {
-        if (pla.CLientID = ID)
-        {
-			switch (buf)
-			{
-			case 0x01:
-				pla.y -= 5;
-				break;
-			case 0x02:
-                pla.y += 5;
-				break;
-			case 0x04:
-                pla.x -= 5;
-				break;
-			case 0x05:
-                pla.y -= 5;
-                pla.x -= 5;
-				break;
-			case 0x06:
-                pla.y += 5;
-                pla.x -= 5;
-				break;
-			case 0x08:
-                pla.x += 5;
-				break;
-			case 0x09:
-                pla.y -= 5;
-                pla.x += 5;
-				break;
-			case 0x0a:
-                pla.y += 5;
-                pla.x += 5;
-				break;
-			}
-        }
-    }
-}
-
-DWORD WINAPI Client_Thread(LPVOID arg) {
-    
-    //소켓 함수 리턴 값
-    int retval;
-
-    //
-    SOCKET client_sock = (SOCKET)arg ;
-    SOCKADDR_IN client_addr;
-    int client_addr_len;
-    char buf[BUFSIZE + 1];
-    
-    ZeroMemory(&buf, sizeof(buf));
-
-    //ip주소와 포트번호 담기
-    getpeername(client_sock, (SOCKADDR*)&client_addr, &client_addr_len);
-
-    EnterCriticalSection(&cs);
-    //Id 보내기  - 공유자원 임으로 임게영역 설정해야함
-    sendID(client_sock, client_addr_len, 0);
-    LeaveCriticalSection(&cs);
-
-    int clientId = uid(dre);
-    Object* player = new Object(clientId);
-    
-    
-
-    //클라이언트 아이디 받기
-    recvn(client_sock, (char*)&clientId, sizeof(clientId), 0);
-
-
-    //EnterCriticalSection(&cs);
-    // 준비 상태 받기
-    if (clientId ==randomFirstID &&  ready[0] == 0) {
-        retval = recvn(client_sock, (char*)&ready[0], sizeof(ready[0]), 0);
-        
-    }
-    else if (clientId == randomSecondID && ready[1] == 0) {
-
-       
-        retval = recvn(client_sock, (char*)&ready[1], sizeof(ready[1]), 0);
-       
-
-    }
-    //LeaveCriticalSection(&cs);
-    //더이상 받을 데이터가 없을떄
-
-    //준비 완료됫다면 게임 시작 보내기
-    if (ready[0] != 0 && ready[1] != 0)
-        send(client_sock, (char*)&gameStart, sizeof(gameStart), 0);
-
-    // 게임 시작
-    while (ready[0] != 0 && ready[1] != 0) {
-    
-
-        //recv(buf)
-        //EnterCriticalSection(&cs);
-        //PlayerUpdate(buf, clientId);
-        //LeaveCriticalSection(&cs);
-        ObjectUpdate();
-        ObjectCollisionCheck();
-        //sendData()
-
-        if (Player->isCollide);
-            //send(Gameover)
-
-        //if (recv(CloseGame));
-            //return 0;
-    }
-
-    if (retval == 0)
-        return 0;
-
-
-}
-
-
-int main(int argc, char* argv[])
-{
-    int retval;
-
-    // 윈속 초기화
-    WSADATA wsa;
-    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-        return 1;
-
-    // socket()
-    SOCKET listen_sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (listen_sock == INVALID_SOCKET) err_quit("socket()");
-
-    // bind()
-    SOCKADDR_IN serveraddr;
-    ZeroMemory(&serveraddr, sizeof(serveraddr));
-    serveraddr.sin_family = AF_INET;
-    serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    serveraddr.sin_port = htons(SERVERPORT);
-    retval = bind(listen_sock, (SOCKADDR*)&serveraddr, sizeof(serveraddr));
-    if (retval == SOCKET_ERROR) err_quit("bind()");
-
-    // listen()
-    retval = listen(listen_sock, SOMAXCONN);
-    if (retval == SOCKET_ERROR) err_quit("listen()");
-
-    // 데이터 통신에 사용할 변수
-    SOCKET client_sock;
-    SOCKADDR_IN client_addr;
-    int client_addr_len;
-    char buf[BUFSIZE + 1];
-
-    HANDLE hThread;
-    
-
-    cout << "서버 구동중~~~" << endl;
-
-    while (1) {
-
-        client_addr_len = sizeof(client_addr);
-        client_sock = accept(listen_sock, (SOCKADDR*)&client_addr, &client_addr_len);
-
-        
-
-        if (client_sock == INVALID_SOCKET) {
-            err_display("accept()");
-            break;
-        }
-
-
-        cout << "\n[TCP 서버] 클라이언트 접속: IP 주소= " 
-            << inet_ntoa(client_addr.sin_addr) // 클라이언트 주소 네트워크 바이트 정렬
-            << ", 포트 번호=" << ntohs(client_addr.sin_port) << endl; // 포트번호 네트워크바이트 정렬
-
-        //쓰레드 생성
-        hThread = CreateThread(NULL, 0, Client_Thread, (LPVOID)client_sock, 0, NULL);
-        if (hThread == NULL) {
-            closesocket(client_sock);
-        }
-        else {
-            CloseHandle(hThread);
-        }
-
-    }
-    
-
-    // closesocket()
-    closesocket(listen_sock);
-
-    // 윈속 종료
-    WSACleanup();
-    return 0;
-}
-

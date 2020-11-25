@@ -112,10 +112,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     server_sock_addr.sin_port = ntohs(SERVERPORT);
 
     //서버에 연결요청을 합니다.
-    //returnvalue = connect(sock, (sockaddr*)&server_sock_addr, sizeof(server_sock_addr));
-    //if (returnvalue == SOCKET_ERROR)
-    //    return 1;/*err_quit("connect()")*/
-
+    returnvalue = connect(sock, (sockaddr*)&server_sock_addr, sizeof(server_sock_addr));
+    if (returnvalue == SOCKET_ERROR)
+        return 1;/*err_quit("connect()")*/
 
     // 전역 문자열을 초기화합니다.
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
@@ -225,39 +224,42 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         GameInit();
         break;
     case WM_KEYDOWN:
-        
         if (wParam == VK_UP)
+        {
             input.UP = 1;
+            send(sock, (char*)UP, sizeof(char), 0);
+        }
+
         else if (wParam == VK_DOWN)
             input.DOWN = 1;
         else if (wParam == VK_LEFT)
-            input.DOWN = 1;
-        else if (wParam == VK_RIGHT)
-            input.DOWN = 1;
-       
-        //RecvfromServer(input);
-
-        switch (wParam)
-        {
-        case VK_UP:
-            Player[0].y -= 5.f;
-            input.UP = 1;
-            break;
-        case VK_DOWN:
-            Player[0].y += 5.f;
-            input.DOWN = 1;
-            break;
-        case VK_LEFT:
-            Player[0].x -= 5.f;
             input.LEFT = 1;
-            break;
-        case VK_RIGHT:
-            Player[0].x += 5.f;
+        else if (wParam == VK_RIGHT)
             input.RIGHT = 1;
-            break;
-        default:
-            break;
-        }
+     
+
+        //switch (wParam)
+        //{
+        //case VK_UP:
+        //    Player[0].y -= 5.f;
+        //    input.UP = 1;
+        //    send(sock, (char*)(0x01), sizeof(char), 0);
+        //    break;
+        //case VK_DOWN:
+        //    Player[0].y += 5.f;
+        //    input.DOWN = 1;
+        //    break;
+        //case VK_LEFT:
+        //    Player[0].x -= 5.f;
+        //    input.LEFT = 1;
+        //    break;
+        //case VK_RIGHT:
+        //    Player[0].x += 5.f;
+        //    input.RIGHT = 1;
+        //    break;
+        //default:
+        //    break;
+        //}
         
     case WM_COMMAND:
         {
@@ -401,11 +403,11 @@ void SendtoServer(const InputFlag& input)
     if (input.UP == 1)
         send(sock, (char*)UP, sizeof(char*), 0);
     else if (input.DOWN == 1)
-        send(sock, (char*)UP, sizeof(char*), 0);
+        send(sock, (char*)DOWN, sizeof(char*), 0);
     else if (input.LEFT == 1)
-        send(sock, (char*)UP, sizeof(char*), 0);
+        send(sock, (char*)LEFT, sizeof(char*), 0);
     else if (input.RIGHT == 1)
-        send(sock, (char*)UP, sizeof(char*), 0);
+        send(sock, (char*)RIGHT, sizeof(char*), 0);
     else
         send(sock, (char*)IDLE, sizeof(char*), 0);
 }
