@@ -1,14 +1,16 @@
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+
 #include <iostream>
 #include <random>
 #include <vector>
-
-using namespace std;
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
-
 #include <WinSock2.h>
 #pragma comment(lib, "ws2_32")
 
 #include "defines.h"
+
+using namespace std;
+
+
 
 default_random_engine dre;
 
@@ -27,11 +29,16 @@ DWORD dwThreadID[MAXTHREAD];
 DWORD WINAPI PlayerThread(LPVOID arg);
 
 void SendInitData(SOCKET clientSock);
+void SendGameData(SOCKET clientSock);
 void InitGameData();
+
+void UpdatePlayer();
+void UpdateObjects();
 
 Object Monster[10];
 Object Player[2];
 Object Item[3];
+Input input;
 
 // ErrorFuction
 void err_quit(const char* msg);
@@ -128,12 +135,60 @@ DWORD WINAPI PlayerThread(LPVOID arg)
 	
 	cout << "받은 데이터 [" << GameReady << "]\n";
 
+	
+	//클라이언트에서 게임을 실행하라고 보내는 신호
+	retval = send(client_sock, (char*)"GameStart", sizeof("GameStart"), 0);
 
+	int t = 0;
+	while (true)
+	{
+		retval = recv(client_sock, (char*)&input, sizeof(input), 0);
+		if (retval == SOCKET_ERROR)
+			err_display("recv()");
+		UpdatePlayer();
+		cout << input.UP << "-" << input.DOWN << "-" << input.LEFT << "-" << input.RIGHT << endl;
+		UpdateObjects();
 
+		SendGameData(client_sock);
+		t++;
+
+		if (t >= 10)
+		{
+			cout << "" << endl;
+		}
+	}
+	
 	return 0;
 }
 
 void SendInitData(SOCKET clientSock)
+{
+	for (const auto& i : Player)
+	{
+		if (send(clientSock, (char*)&i, sizeof(i), 0) == -1)
+		{
+			cout << "Send Fail\n";
+		}
+	}
+
+	for (const auto& i : Monster)
+	{
+		if (send(clientSock, (char*)&i, sizeof(i), 0) == -1)
+		{
+			cout << "Send Fail\n";
+		}
+	}
+
+	for (const auto& i : Item)
+	{
+		if (send(clientSock, (char*)&i, sizeof(i), 0) == -1)
+		{
+			cout << "Send Fail\n";
+		}
+	}
+}
+
+void SendGameData(SOCKET clientSock)
 {
 	for (const auto& i : Player)
 	{
@@ -172,6 +227,55 @@ void InitGameData()
 	{
 		i.x = PositionX(dre);
 		i.y = PositionY(dre);
+	}
+}
+
+void UpdatePlayer()
+{
+	if (input.UP)
+	{
+		Player[0].y -= 5;
+	}
+	if (input.DOWN)
+	{
+		Player[0].y += 5;
+	}
+	if (input.LEFT)
+	{
+		Player[0].x -= 5;
+	}
+	if (input.RIGHT)
+	{
+		Player[0].x += 5;
+	}
+}
+
+void UpdateObjects()
+{
+	for (auto& i : Monster)
+	{
+		if (i.x >= 0 && i.x <= WINDOWWIDTH && i.y > 0 && i.y <= WINDOWHEIGHT)
+		{
+			i.x += MoveX(dre);
+			i.y += MoveY(dre);
+		}
+		else
+		{
+			continue;// 창 밖으로 나갔을때 처리
+		}
+	}
+
+	for (auto& i : Item)
+	{
+		if (i.x >= 0 && i.x <= WINDOWWIDTH && i.y > 0 && i.y <= WINDOWHEIGHT)
+		{
+			i.x += MoveX(dre);
+			i.y += MoveY(dre);
+		}
+		else
+		{
+			continue;// 창 밖으로 나갔을때 처리
+		}
 	}
 }
 

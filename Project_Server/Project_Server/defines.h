@@ -20,3 +20,13 @@ struct Object
 	bool isActive = true;
 };
 #pragma pack(pop)
+
+#pragma pack(push, 1)
+struct Input
+{
+	bool UP = false;
+	bool DOWN = false;
+	bool LEFT = false;
+	bool RIGHT = false;
+};
+#pragma pack(pop)

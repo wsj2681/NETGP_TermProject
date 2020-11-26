@@ -24,11 +24,21 @@ struct Object2
 };
 #pragma pack(pop)
 
-constexpr char UP = 0x01;
-constexpr char DOWN = 0x02;
-constexpr char LEFT = 0x04;
-constexpr char RIGHT = 0x08;
-constexpr char IDLE = 0x00;
+#pragma pack(push, 1)
+struct Input
+{
+    char UP = 0x01;
+    char DOWN = 0x02;
+    char LEFT = 0x04;
+    char RIGHT = 0x08;
+};
+#pragma pack(pop)
+
+//constexpr char UP = 0x01;
+//constexpr char DOWN = 0x02;
+//constexpr char LEFT = 0x04;
+//constexpr char RIGHT = 0x08;
+//constexpr char IDLE = 0x00;
 
 //TODO : local ip -> network ip
 const char* SERVERIP = "127.0.0.1";
@@ -64,7 +74,7 @@ struct Object
     CImage image;
 };
 
-InputFlag input;
+Input input;
 
 Object BackGround;
 CImage Backbuff;
@@ -155,6 +165,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
     returnvalue = send(sock, (char*)"Ready", sizeof("Ready"), 0);
+
+
+    char GameStart[10];
+    recv(sock, (char*)GameStart, sizeof(GameStart), 0);
+
+    input.UP = 1;
+    input.DOWN = 2;
+    input.LEFT = 4;
+    input.RIGHT = 16;
+
+   
+
 
     // 전역 문자열을 초기화합니다.
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
@@ -253,11 +275,17 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    cout << input << endl;
     PAINTSTRUCT paint;
 
-    input.Init();
     InvalidateRect(hWnd, nullptr, false);
+
+    send(sock, (char*)&input, sizeof(input), 0);
+    
+    input.UP = false;
+    input.DOWN = false;
+    input.LEFT = false;
+    input.RIGHT = false;
+
     switch (message)
     {
     case WM_CREATE:
@@ -266,16 +294,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_KEYDOWN:
         if (wParam == VK_UP)
         {
-            input.UP = 1;
-            send(sock, (char*)UP, sizeof(char), 0);
+            input.UP = true;
+            //send(sock, (char*)UP, sizeof(char), 0);
         }
 
         else if (wParam == VK_DOWN)
-            input.DOWN = 1;
+            input.DOWN = true;
         else if (wParam == VK_LEFT)
-            input.LEFT = 1;
+            input.LEFT = true;
         else if (wParam == VK_RIGHT)
-            input.RIGHT = 1;
+            input.RIGHT = true;
      
 
         //switch (wParam)
