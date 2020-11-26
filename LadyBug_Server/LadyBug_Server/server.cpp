@@ -160,9 +160,13 @@ DWORD WINAPI Client_Thread(LPVOID arg)
 
     InitObjects();
 
-    char buffer[2];
 
-    retval = recv(client_sock, (char*)buffer, sizeof(char), 0);
+
+    //send(client_sock, (char*)buf, )
+
+    char buffer[10];
+
+    retval = recv(client_sock, (char*)&buffer, sizeof(char), 0);
     cout << "받은 값 - " << "[" << buffer << "]" << endl;
 
                 
@@ -377,14 +381,14 @@ void sendID(SOCKET s, int len, int flags) {
 }
 int sendData(SOCKET s, char* buf, int len, int flags) {
 
-    //송신 반환값
     int sended;
-    // 버퍼
     char* ptr = buf;
-    // 송신 길이
     int sendlen = len;
 
     sended = send(s, ptr, sendlen, flags);
+
+    for (auto& i : Player)
+        send(s, (char*)&i, sizeof(Player), 0);
 
     /////////////////////////////////////////////
     // 이후 송신 클래스 생성시 작성할 부분   ////

@@ -11,6 +11,19 @@
 
 #define MAX_LOADSTRING 100
 
+#pragma pack(push, 1)
+struct Object2
+{
+    short x = 0;
+    short y = 0;
+    int width = 30;
+    int height = 30;
+
+    bool isCollide = false;
+    bool isActive = true;
+};
+#pragma pack(pop)
+
 constexpr char UP = 0x01;
 constexpr char DOWN = 0x02;
 constexpr char LEFT = 0x04;
@@ -60,7 +73,7 @@ CImage imageGameResult;
 
 Object Player[2];
 
-Object Monster[3];
+Object Monster[10];
 
 Object Item[2];
 
@@ -71,16 +84,10 @@ SOCKET sock;
 void GameInit();
 void GameRelease();
 
-void LobbyState();
-void MainGameState();
-void ResultState();
-
-void SendtoServer();
-void RecvfromServer(const InputFlag& input);
+int Recvn(SOCKET sock, char* buf, int len, int flags);
+void RecvObjects();
 
 void DrawObject(HDC memDC);
-
-void GameTimer();
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -115,6 +122,39 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     returnvalue = connect(sock, (sockaddr*)&server_sock_addr, sizeof(server_sock_addr));
     if (returnvalue == SOCKET_ERROR)
         return 1;/*err_quit("connect()")*/
+
+    char data[9];
+
+    Object2 object;
+
+    returnvalue = recv(sock, (char*)&object, sizeof(object), 0);
+
+    Object2 Player[2];
+    for (const auto& i : Player)
+    {
+        if (recv(sock, (char*)&i, sizeof(i), 0) == -1)
+        {
+            cout << "Send Fail\n";
+        }
+    }
+    Object2 Monster[10];
+    for (const auto& i : Monster)
+    {
+        if (recv(sock, (char*)&i, sizeof(i), 0) == -1)
+        {
+            cout << "Send Fail\n";
+        }
+    }
+    Object2 Item[3];
+    for (const auto& i : Item)
+    {
+        if (recv(sock, (char*)&i, sizeof(i), 0) == -1)
+        {
+            cout << "Send Fail\n";
+        }
+    }
+
+    returnvalue = send(sock, (char*)"Ready", sizeof("Ready"), 0);
 
     // 전역 문자열을 초기화합니다.
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
@@ -373,48 +413,32 @@ void GameInit()
     imageGameResult.Load(_TEXT("Images/Result.png"));
 }
 
-void GameRelease()
+int Recvn(SOCKET sock, char* buf, int len, int flags)
 {
+    int received;
+    char* ptr = buf;
 
+    int left = len;
+
+    while (left > 0)
+    {
+        received = recv(sock, ptr, left, flags);
+
+        if (received == SOCKET_ERROR)
+            return SOCKET_ERROR;
+        else if (received == 0)
+            break;
+
+        left -= received;
+        ptr += received;
+    }
+
+    return (len - left);
 }
 
-void LobbyState()
+void RecvObjects()
 {
-
-}
-
-void MainGameState()
-{
-}
-
-void MainGameState(const SOCKET& sock)
-{
-    //SendtoServer();
-    //RecvfromServer();
-}
-
-void ResultState()
-{
-
-}
-
-void SendtoServer(const InputFlag& input)
-{
-    if (input.UP == 1)
-        send(sock, (char*)UP, sizeof(char*), 0);
-    else if (input.DOWN == 1)
-        send(sock, (char*)DOWN, sizeof(char*), 0);
-    else if (input.LEFT == 1)
-        send(sock, (char*)LEFT, sizeof(char*), 0);
-    else if (input.RIGHT == 1)
-        send(sock, (char*)RIGHT, sizeof(char*), 0);
-    else
-        send(sock, (char*)IDLE, sizeof(char*), 0);
-}
-
-void RecvfromServer()
-{
-
+    
 }
 
 void DrawObject(HDC memDC)
