@@ -1,3 +1,0 @@
-﻿  main.cpp
-C:\Users\wsj26\Desktop\NETGP_TermProject\Project_Server\Project_Server\main.cpp(75,7): warning C4101: 'buf' :참조되지 않은 지역 변수입니다.
-  Project_Server.vcxproj -> C:\Users\wsj26\Desktop\NETGP_TermProject\Project_Server\Debug\Project_Server.exe
