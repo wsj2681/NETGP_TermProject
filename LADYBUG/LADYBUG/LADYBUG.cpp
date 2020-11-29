@@ -8,34 +8,10 @@ Input input; // 키입력
 SOCKET sock; // 소켓
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam);
-void err_quit(const char* msg)
-{
-	LPVOID lpMsgBuf;
-	FormatMessage(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-		NULL, WSAGetLastError(),
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPTSTR)&lpMsgBuf, 0, NULL);
-	MessageBox(NULL, (LPCTSTR)lpMsgBuf, msg, MB_ICONERROR);
-	LocalFree(lpMsgBuf);
-	exit(1);
-}
-void err_display(const char* msg)
-{
-	LPVOID lpMsgBuf;
-	FormatMessage(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-		NULL, WSAGetLastError(),
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPTSTR)&lpMsgBuf, 0, NULL);
-	printf("[%s] %s", msg, (char*)lpMsgBuf);
-	LocalFree(lpMsgBuf);
-}
 
 //디바이스 컨테스트 얻기
 HINSTANCE g_hInst;
 LPCTSTR lpszClass = "Window Class Name";
-
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdParam, int nCmdShow)
 {
@@ -99,215 +75,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdPa
 HINSTANCE hInst;
 
 void gameValueInit();
-float bug_x_move(BUG bug, Move player);
 
-static int item_1_Flag[10] = { 0, };
-static int item_1_frame[10] = { 0, };
-static int item_1_carry[10] = { 0, };
 
-void ITEM1(Move& item_1, int i)
-{
-
-	item_1.picX = 0 + (item_1_frame[i] * 230);
-	item_1.picY = item_1_carry[i] * 226;
-	item_1_frame[i]++;
-
-	if (item_1_frame[i] >= 8)
-	{
-		item_1_frame[i] = 0;
-		item_1_carry[i]++;
-		//item_1_Flag = 0;
-	}
-	if (item_1_carry[i] > 5)
-	{
-		item_1_frame[i] = 0;
-		item_1_carry[i] = 0;
-		item_1_Flag[i] = 0;
-	}
-}
-
-//아이템 6
-static int item_6_Flag[10] = { 0, };
-static int item_6_frame[10] = { 0, };
-static int item_6_direction[10] = { 0, };
-static int item_6_bounce[10] = { 0, };
-void ITEM6_DIRECTION(Move& item_6, int i)
-{
-	if (item_6_direction[i] == 0)
-	{
-		if (item_6.y <= 0)
-		{
-			item_6_direction[i] = 4;
-			item_6_bounce[i]++;
-		}
-	}
-	if (item_6_direction[i] == 4)
-	{
-		if (item_6.x <= 0)
-		{
-			item_6_direction[i] = 3;
-			item_6_bounce[i]++;
-		}
-		else if (item_6.y + item_6.h >= 800)
-		{
-			item_6_direction[i] = 1;
-			item_6_bounce[i]++;
-		}
-	}
-	else if (item_6_direction[i] == 3)
-	{
-		if (item_6.x + item_6.w >= 500)
-		{
-			item_6_direction[i] = 4;
-			item_6_bounce[i]++;
-		}
-		else if (item_6.y + item_6.h >= 800)
-		{
-			item_6_direction[i] = 2;
-			item_6_bounce[i]++;
-		}
-	}
-	else if (item_6_direction[i] == 2)
-	{
-		if (item_6.x + item_6.w >= 500)
-		{
-			item_6_direction[i] = 1;
-			item_6_bounce[i]++;
-		}
-		else if (item_6.y <= 0)
-		{
-			item_6_direction[i] = 3;
-			item_6_bounce[i]++;
-		}
-	}
-	else if (item_6_direction[i] == 1)
-	{
-		if (item_6.x <= 0)
-		{
-			item_6_direction[i] = 2;
-			item_6_bounce[i]++;
-		}
-		else if (item_6.y <= 0)
-		{
-			item_6_direction[i] = 4;
-			item_6_bounce[i]++;
-		}
-	}
-
-}
-void ITEM6_MOVE(Move& item_6, int i)
-{
-	if (item_6_direction[i] == 0)
-	{
-		item_6.y -= 13;
-		ITEM6_DIRECTION(item_6, i);
-	}
-	else if (item_6_direction[i] == 1)
-	{
-		item_6.x -= 13;
-		item_6.y -= 13;
-		ITEM6_DIRECTION(item_6, i);
-	}
-	else if (item_6_direction[i] == 2)
-	{
-		item_6.x += 13;
-		item_6.y -= 13;
-		ITEM6_DIRECTION(item_6, i);
-	}
-	else if (item_6_direction[i] == 3)
-	{
-		item_6.x += 13;
-		item_6.y += 13;
-		ITEM6_DIRECTION(item_6, i);
-	}
-	else if (item_6_direction[i] == 4)
-	{
-		item_6.x -= 13;
-		item_6.y += 13;
-		ITEM6_DIRECTION(item_6, i);
-	}
-}
-void ITEM6(Move& item_6, int i)
-{
-	item_6.picX = 0 + (item_6_frame[i] * 114);
-	item_6_frame[i]++;
-	ITEM6_MOVE(item_6, i);
-	if (item_6_frame[i] >= 5)
-	{
-		item_6_frame[i] = 0;
-	}
-	if (item_6_bounce[i] >= 6)
-	{
-		item_6_bounce[i] = 0;
-		item_6_Flag[i] = 0;
-		item_6_frame[i] = 0;
-		item_6_direction[i] = 0;
-	}
-}
-
-//아이템 8
-static int item_8_Flag[10] = { 0, };
-static int item_8_frame[10] = { 0, };
-void ITEM8(Move& player, Move& item_8, int i)
-{
-	item_8.picX = 0 + (item_8_frame[i] * 157);
-	item_8_frame[i]++;
-
-	if (item_8_frame[i] >= 7)
-	{
-		item_8_frame[i] = 0;
-		if (item_8_Flag[i] != 2)
-		{
-			item_8_Flag[i] = 2;//앞으로 돌진 플래그 on
-			item_8.x = player.x - 65;
-			item_8.y = player.y - 60;
-		}
-	}
-	if (item_8_Flag[i] == 2)
-	{
-		item_8.y -= 7;
-		if (item_8.y <= -300)
-		{
-			item_8_Flag[i] = 0;
-		}
-	}
-}
-
-//아이템 10
-static int item_10_Flag[10] = { 0, };
-void ITEM10(Move& player, Move& item_10, int i)
-{
-
-	item_10.y -= 5;
-
-	if (item_10.y + item_10.h <= 0)
-	{
-		item_10_Flag[i] = 0;
-	}
-}
-
-//방해요소 2 플래그
-static int interrupt_ITEM2_Flag = 0;
-static int interrupt_ITEM2_timer = 0;
-static float interrupt_ITEM2_frame = 0;
-void interrupted_ITEM_2()
-{
-	if (interrupt_ITEM2_timer < 60)
-	{
-		interrupt_ITEM2_timer++;
-		interrupt_ITEM2_frame += 10;
-	}
-	else if (interrupt_ITEM2_timer >= 60)
-	{
-		interrupt_ITEM2_frame -= 10;
-
-		if (interrupt_ITEM2_frame <= 0)
-		{
-			interrupt_ITEM2_Flag = 0;
-			interrupt_ITEM2_timer = 0;
-		}
-	}
-}
 //무적 키
 static int key = 0;
 
@@ -333,8 +102,9 @@ int check_menu(int mx, int my)
 	return 0;
 }
 
+void MenuClick();
+void ItemMenuClick(LPARAM lParam);
 void RecvObject();
-
 void DrawItems(HDC memDC);
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
@@ -399,185 +169,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	case WM_LBUTTONDOWN:
 		mx = LOWORD(lParam);
 		my = HIWORD(lParam);
-		if (!START)
-		{
-			if (itme_menu_check == 6)
-			{
-
-				if (350 < mx && mx < 500)
-				{
-					if ((500 < my && my < 550) && menu_check == 1)
-					{
-						itme_menu_check = 0;
-					}
-					else if ((570 < my && my < 620) && (menu_check == 2))
-					{
-						START = true;
-					}
-					else if ((640 < my && my < 690) && (menu_check == 3))
-					{
-						START = true;
-						mode_2p = true;
-					}
-
-				}
-			}
-			else
-			{
-				if (20 < mx && mx < 120)
-				{
-					if (20 < my && my < 70)
-					{
-						if (itme_menu_check == 2)
-						{
-							itme_menu_check = 6;
-						}
-						else if (itme_menu_check == 4)
-						{
-							itme_menu_check = 6;
-						}
-					}
-				}
-				if (380 < mx && mx < 480)
-				{
-					if (20 < my && my < 70)
-					{
-						if (itme_menu_check == 3)
-						{
-							itme_menu_check = 1;
-						}
-						else if (itme_menu_check == 5)
-						{
-							itme_menu_check = 0;
-						}
-					}
-				}
-			}
-		}
-		if (Gameover)
-		{
-			if (180 < mx && mx < 320)
-			{
-				if (450 < my && my < 520)
-				{
-					START = false;
-					Gameover = false;
-					menu_check = 0;
-
-					SecondPlayer.x = 230;
-					SecondPlayer.y = 700;
-					player.x = 235;
-					player.y = 650;
-					score = 0;
-					bug_num = 0;
-					player.state = 1;
-					SecondPlayer.state = 1;
-					mode_2p = false;
-					for (int i = 0; i < 500; i++)
-					{
-						bug[i].x = -100;
-						bug[i].y = -100;
-						bug[i].state = 0;
-					}
-					item_Drop_Timer = 0;
-					item_Count = 0;
-					for (int i = 0; i < 20; ++i)
-					{
-						item_Drop[i].state = 0;
-					}
-					item_1_count = 0;
-					item_6_count = 0;
-					item_8_count = 0;
-					item_10_count = 0;
-					for (int i = 0; i < 10; i++)
-					{
-						item_1_Flag[i] = 0;
-						item_6_Flag[i] = 0;
-						item_8_Flag[i] = 0;
-						item_10_Flag[i] = 0;
-					}
-					interrupt_ITEM2_Flag = 0;
-					key = 0;
-
-				}
-			}
-		}
+		MenuClick();
 		break;
 	case WM_LBUTTONUP:
 		InvalidateRgn(hWnd, NULL, FALSE);
 		break;
 	case WM_MOUSEMOVE:
-		if (!START)
-		{
-			mx = LOWORD(lParam);
-			my = HIWORD(lParam);
-			menu_check = check_menu(mx, my);
-		}
-		if (itme_menu_check < 6)
-		{
-			if (itme_menu_check == 0 || itme_menu_check == 2 || itme_menu_check == 3)
-			{
-				if (20 < my && my < 70)
-				{
-					if (20 < mx && mx < 120)
-					{
-						itme_menu_check = 2;
-					}
-					else if (380 < mx && mx < 480)
-					{
-						itme_menu_check = 3;
-					}
-					else
-					{
-						itme_menu_check = 0;
-					}
-				}
-				else
-				{
-					itme_menu_check = 0;
-				}
-			}
-			if (itme_menu_check == 1 || itme_menu_check == 4 || itme_menu_check == 5)
-			{
-				if (20 < my && my < 70)
-				{
-					if (20 < mx && mx < 120)
-					{
-						itme_menu_check = 4;
-					}
-					else if (380 < mx && mx < 480)
-					{
-						itme_menu_check = 5;
-					}
-					else
-					{
-						itme_menu_check = 1;
-					}
-				}
-				else
-				{
-					itme_menu_check = 1;
-				}
-			}
-		}
-
-		if (Gameover)
-		{
-			mx = LOWORD(lParam);
-			my = HIWORD(lParam);
-
-			if (180 < mx && mx < 320)
-			{
-				if (450 < my && my < 520)
-				{
-					over_check = 1;
-				}
-				else
-				{
-					over_check = 0;
-				}
-			}
-		}
+		ItemMenuClick(lParam);
 		break;
 	case WM_TIMER:
 		send(sock, (char*)&input, sizeof(input), 0);
@@ -595,56 +193,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		BACKGROUND.Draw(memdc, backGround1.x, backGround1.y, backGround1.w, backGround1.h, backGround1.picX, backGround1.picY, backGround1.picW, backGround1.picH);
 		BACKGROUND.Draw(memdc, backGround2.x, backGround2.y, backGround2.w, backGround2.h, backGround2.picX, backGround2.picY, backGround2.picW, backGround2.picH);
 
-		//아이템 드롭
-		for (int i = 0; i < 20; ++i)
-		{
-			if (item_Drop[i].state == 1)
-				image1.TransparentBlt(memdc, item_Drop[i].x, item_Drop[i].y, item_Drop[i].w, item_Drop[i].h, item_Drop[i].picX, item_Drop[i].picY, item_Drop[i].picW, item_Drop[i].picH, RGB(0, 255, 255));
-			if (item_Drop[i].state == 2)
-				INTERRUPT_ITEM2.Draw(memdc, item_Drop[i].x, item_Drop[i].y, item_Drop[i].w, item_Drop[i].h, item_Drop[i].picX, item_Drop[i].picY, item_Drop[i].picW, item_Drop[i].picH);
-			if (item_Drop[i].state == 3)
-				image6.TransparentBlt(memdc, item_Drop[i].x, item_Drop[i].y, item_Drop[i].w, item_Drop[i].h, item_Drop[i].picX, item_Drop[i].picY, item_Drop[i].picW, item_Drop[i].picH, RGB(0, 255, 255));
-			if (item_Drop[i].state == 4)
-				image8.TransparentBlt(memdc, item_Drop[i].x, item_Drop[i].y, item_Drop[i].w, item_Drop[i].h, item_Drop[i].picX, item_Drop[i].picY, item_Drop[i].picW, item_Drop[i].picH, RGB(0, 255, 255));
-			if (item_Drop[i].state == 5)
-				image10.TransparentBlt(memdc, item_Drop[i].x, item_Drop[i].y, item_Drop[i].w, item_Drop[i].h, item_Drop[i].picX, item_Drop[i].picY, item_Drop[i].picW, item_Drop[i].picH, RGB(0, 255, 255));
-		}
-
 		DrawItems(memdc);
-
-		//플레이어
-		if (player.state == 1)
-		{
-			PLAYER.TransparentBlt(memdc, player.x, player.y, player.w, player.h, player.picX, player.picY, player.picW, player.picH, RGB(255, 255, 255));//플레이어
-		}
-		if (mode_2p)
-		{
-			if (SecondPlayer.state == 1)
-			{
-				SECONDPLAYER.Draw(memdc, SecondPlayer.x, SecondPlayer.y, SecondPlayer.w, SecondPlayer.h, SecondPlayer.picX, SecondPlayer.picY, SecondPlayer.picW, SecondPlayer.picH);//플레이어
-			}
-		}
-
-		//버그
-		for (int i = 0; i < MONSTER; i++)
-		{
-
-			if (bug[i].state == 1)
-			{
-				BUG_image.TransparentBlt(memdc, bug[i].x, bug[i].y, player.w, player.h, player.picX, player.picY, 72, 73, RGB(255, 255, 255));
-			}
-			if (bug[i].impact_num != 9)
-			{
-
-				impact[bug[i].impact_num].Draw(memdc, bug[i].x - 15, bug[i].y - 15, player.w + 15, player.h + 15, bug[i].impact_time * 172, 0, 172, 160);
-				bug[i].impact_time++;
-				if (bug[i].impact_time == 4)
-				{
-					bug[i].impact_time = 0;
-					bug[i].impact_num = 9;
-				}
-			}
-		}
+		
 		//방해요소 2
 		if (interrupt_ITEM2_Flag == 1)
 		{
@@ -654,7 +204,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			SelectObject(memdc, oldBrush);
 			DeleteObject(hBrush);
 		}
-
 
 		//점수
 		if (Gameover)
@@ -806,6 +355,187 @@ void gameValueInit()
 	
 }
 
+void MenuClick()
+{
+	if (!START)
+	{
+		if (itme_menu_check == 6)
+		{
+
+			if (350 < mx && mx < 500)
+			{
+				if ((500 < my && my < 550) && menu_check == 1)
+				{
+					itme_menu_check = 0;
+				}
+				else if ((570 < my && my < 620) && (menu_check == 2))
+				{
+					START = true;
+				}
+				else if ((640 < my && my < 690) && (menu_check == 3))
+				{
+					START = true;
+					mode_2p = true;
+				}
+
+			}
+		}
+		else
+		{
+			if (20 < mx && mx < 120)
+			{
+				if (20 < my && my < 70)
+				{
+					if (itme_menu_check == 2)
+					{
+						itme_menu_check = 6;
+					}
+					else if (itme_menu_check == 4)
+					{
+						itme_menu_check = 6;
+					}
+				}
+			}
+			if (380 < mx && mx < 480)
+			{
+				if (20 < my && my < 70)
+				{
+					if (itme_menu_check == 3)
+					{
+						itme_menu_check = 1;
+					}
+					else if (itme_menu_check == 5)
+					{
+						itme_menu_check = 0;
+					}
+				}
+			}
+		}
+	}
+	if (Gameover)
+	{
+		if (180 < mx && mx < 320)
+		{
+			if (450 < my && my < 520)
+			{
+				START = false;
+				Gameover = false;
+				menu_check = 0;
+
+				SecondPlayer.x = 230;
+				SecondPlayer.y = 700;
+				player.x = 235;
+				player.y = 650;
+				score = 0;
+				bug_num = 0;
+				player.state = 1;
+				SecondPlayer.state = 1;
+				mode_2p = false;
+				for (int i = 0; i < 500; i++)
+				{
+					bug[i].x = -100;
+					bug[i].y = -100;
+					bug[i].state = 0;
+				}
+				item_Drop_Timer = 0;
+				item_Count = 0;
+				for (int i = 0; i < 20; ++i)
+				{
+					item_Drop[i].state = 0;
+				}
+				item_1_count = 0;
+				item_6_count = 0;
+				item_8_count = 0;
+				item_10_count = 0;
+				for (int i = 0; i < 10; i++)
+				{
+					item_1_Flag[i] = 0;
+					item_6_Flag[i] = 0;
+					item_8_Flag[i] = 0;
+					item_10_Flag[i] = 0;
+				}
+				interrupt_ITEM2_Flag = 0;
+				key = 0;
+
+			}
+		}
+	}
+}
+
+void ItemMenuClick(LPARAM lParam)
+{
+	if (!START)
+	{
+		mx = LOWORD(lParam);
+		my = HIWORD(lParam);
+		menu_check = check_menu(mx, my);
+	}
+	if (itme_menu_check < 6)
+	{
+		if (itme_menu_check == 0 || itme_menu_check == 2 || itme_menu_check == 3)
+		{
+			if (20 < my && my < 70)
+			{
+				if (20 < mx && mx < 120)
+				{
+					itme_menu_check = 2;
+				}
+				else if (380 < mx && mx < 480)
+				{
+					itme_menu_check = 3;
+				}
+				else
+				{
+					itme_menu_check = 0;
+				}
+			}
+			else
+			{
+				itme_menu_check = 0;
+			}
+		}
+		if (itme_menu_check == 1 || itme_menu_check == 4 || itme_menu_check == 5)
+		{
+			if (20 < my && my < 70)
+			{
+				if (20 < mx && mx < 120)
+				{
+					itme_menu_check = 4;
+				}
+				else if (380 < mx && mx < 480)
+				{
+					itme_menu_check = 5;
+				}
+				else
+				{
+					itme_menu_check = 1;
+				}
+			}
+			else
+			{
+				itme_menu_check = 1;
+			}
+		}
+	}
+
+	if (Gameover)
+	{
+		mx = LOWORD(lParam);
+		my = HIWORD(lParam);
+
+		if (180 < mx && mx < 320)
+		{
+			if (450 < my && my < 520)
+			{
+				over_check = 1;
+			}
+			else
+			{
+				over_check = 0;
+			}
+		}
+	}
+}
 void RecvObject()
 {
 	for (auto& i : bug)
@@ -877,6 +607,21 @@ void RecvObject()
 
 void DrawItems(HDC memdc)
 {
+	//아이템 드롭
+	for (int i = 0; i < 20; ++i)
+	{
+		if (item_Drop[i].state == 1)
+			image1.TransparentBlt(memdc, item_Drop[i].x, item_Drop[i].y, item_Drop[i].w, item_Drop[i].h, item_Drop[i].picX, item_Drop[i].picY, item_Drop[i].picW, item_Drop[i].picH, RGB(0, 255, 255));
+		if (item_Drop[i].state == 2)
+			INTERRUPT_ITEM2.Draw(memdc, item_Drop[i].x, item_Drop[i].y, item_Drop[i].w, item_Drop[i].h, item_Drop[i].picX, item_Drop[i].picY, item_Drop[i].picW, item_Drop[i].picH);
+		if (item_Drop[i].state == 3)
+			image6.TransparentBlt(memdc, item_Drop[i].x, item_Drop[i].y, item_Drop[i].w, item_Drop[i].h, item_Drop[i].picX, item_Drop[i].picY, item_Drop[i].picW, item_Drop[i].picH, RGB(0, 255, 255));
+		if (item_Drop[i].state == 4)
+			image8.TransparentBlt(memdc, item_Drop[i].x, item_Drop[i].y, item_Drop[i].w, item_Drop[i].h, item_Drop[i].picX, item_Drop[i].picY, item_Drop[i].picW, item_Drop[i].picH, RGB(0, 255, 255));
+		if (item_Drop[i].state == 5)
+			image10.TransparentBlt(memdc, item_Drop[i].x, item_Drop[i].y, item_Drop[i].w, item_Drop[i].h, item_Drop[i].picX, item_Drop[i].picY, item_Drop[i].picW, item_Drop[i].picH, RGB(0, 255, 255));
+	}
+
 	//아이템 그리기
 	for (int i = 0; i < 10; ++i)
 	{
@@ -920,6 +665,40 @@ void DrawItems(HDC memdc)
 		if (item_10_Flag[i] != 0)
 		{
 			ITEM_10.Draw(memdc, item_10[i].x, item_10[i].y, item_10[i].w, item_10[i].h, item_10[i].picX, item_10[i].picY, item_10[i].picW, item_10[i].picH);
+		}
+	}
+
+	//플레이어
+	if (player.state == 1)
+	{
+		PLAYER.TransparentBlt(memdc, player.x, player.y, player.w, player.h, player.picX, player.picY, player.picW, player.picH, RGB(255, 255, 255));//플레이어
+	}
+	if (mode_2p)
+	{
+		if (SecondPlayer.state == 1)
+		{
+			SECONDPLAYER.Draw(memdc, SecondPlayer.x, SecondPlayer.y, SecondPlayer.w, SecondPlayer.h, SecondPlayer.picX, SecondPlayer.picY, SecondPlayer.picW, SecondPlayer.picH);//플레이어
+		}
+	}
+
+	//버그
+	for (int i = 0; i < MONSTER; i++)
+	{
+
+		if (bug[i].state == 1)
+		{
+			BUG_image.TransparentBlt(memdc, bug[i].x, bug[i].y, player.w, player.h, player.picX, player.picY, 72, 73, RGB(255, 255, 255));
+		}
+		if (bug[i].impact_num != 9)
+		{
+
+			impact[bug[i].impact_num].Draw(memdc, bug[i].x - 15, bug[i].y - 15, player.w + 15, player.h + 15, bug[i].impact_time * 172, 0, 172, 160);
+			bug[i].impact_time++;
+			if (bug[i].impact_time == 4)
+			{
+				bug[i].impact_time = 0;
+				bug[i].impact_num = 9;
+			}
 		}
 	}
 }

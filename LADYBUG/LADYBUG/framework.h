@@ -133,6 +133,27 @@ static float mx, my;
 static int score;
 static int bug_num;
 
+static int item_1_Flag[10] = { 0, };
+static int item_1_frame[10] = { 0, };
+static int item_1_carry[10] = { 0, };
+
+//아이템 6
+static int item_6_Flag[10] = { 0, };
+static int item_6_frame[10] = { 0, };
+static int item_6_direction[10] = { 0, };
+static int item_6_bounce[10] = { 0, };
+
+//아이템 8
+static int item_8_Flag[10] = { 0, };
+static int item_8_frame[10] = { 0, };
+
+//아이템 10
+static int item_10_Flag[10] = { 0, };
+
+//방해요소 2 플래그
+static int interrupt_ITEM2_Flag = 0;
+static int interrupt_ITEM2_timer = 0;
+static float interrupt_ITEM2_frame = 0;
 
 
 static BOOL pause = false;
@@ -142,3 +163,29 @@ static BOOL mode_2p = false;
 static int menu_check = 0;
 static int over_check = 0;
 static int itme_menu_check = 6;
+
+
+void err_quit(const char* msg)
+{
+	LPVOID lpMsgBuf;
+	FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		NULL, WSAGetLastError(),
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR)&lpMsgBuf, 0, NULL);
+	MessageBox(NULL, (LPCTSTR)lpMsgBuf, msg, MB_ICONERROR);
+	LocalFree(lpMsgBuf);
+	exit(1);
+}
+
+void err_display(const char* msg)
+{
+	LPVOID lpMsgBuf;
+	FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		NULL, WSAGetLastError(),
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR)&lpMsgBuf, 0, NULL);
+	printf("[%s] %s", msg, (char*)lpMsgBuf);
+	LocalFree(lpMsgBuf);
+}
