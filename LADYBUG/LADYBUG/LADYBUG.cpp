@@ -116,10 +116,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	HBRUSH hBrush, oldBrush;
 	HFONT myFont, oldFont;
 
-	input.UP = false;
-	input.DOWN = false;
-	input.LEFT = false;
-	input.RIGHT = false;
 
 	switch (iMessage)
 	{
@@ -163,6 +159,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		if (GetKeyState(VK_DOWN) & 0x8000)
 			input.DOWN = true;
 
+		
 
 		InvalidateRgn(hWnd, NULL, FALSE);
 		break;
@@ -180,6 +177,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	case WM_TIMER:
 		send(sock, (char*)&input, sizeof(input), 0);
 		cout << "send input" << endl;
+
+		input.UP = false;
+		input.DOWN = false;
+		input.LEFT = false;
+		input.RIGHT = false;
+
 		RecvObject();
 		InvalidateRgn(hWnd, NULL, FALSE);
 		break;
@@ -538,6 +541,7 @@ void ItemMenuClick(LPARAM lParam)
 }
 void RecvObject()
 {
+
 	for (auto& i : bug)
 	{
 		recv(sock, (char*)&i, sizeof(i), 0);

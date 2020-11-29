@@ -129,9 +129,7 @@ DWORD WINAPI PlayerThread(LPVOID arg)
 	{
 		recv(client_sock, (char*)&input, sizeof(input), 0);
 		gameTimerFunc();
-		SendObject(client_sock);
-
-		
+		SendObject(client_sock);	
 	}
 
 	return 0;
@@ -279,6 +277,7 @@ void SendGameInit(SOCKET client_sock)
 	{
 		send(client_sock, (char*)&i, sizeof(i), 0);
 	}
+	cout << "Send OK" << endl;
 }
 
 void SendObject(SOCKET client_sock)
@@ -347,7 +346,7 @@ void SendObject(SOCKET client_sock)
 	{
 		send(client_sock, (char*)&i, sizeof(i), 0);
 	}
-
+	cout << "Send OK" << endl;
 }
 
 static int key = 0;
@@ -534,11 +533,11 @@ void gameTimerFunc()
 {
 	if (START && (!Gameover))
 	{
-		
-		if (GetKeyState(VK_LEFT) & 0x8000)      player.x -= 5;
-		if (GetKeyState(VK_RIGHT) & 0x8000)     player.x += 5;
-		if (GetKeyState(VK_UP) & 0x8000)        player.y -= 5;
-		if (GetKeyState(VK_DOWN) & 0x8000)      player.y += 5;
+		//
+		//if (GetKeyState(VK_LEFT) & 0x8000)      player.x -= 5;
+		//if (GetKeyState(VK_RIGHT) & 0x8000)     player.x += 5;
+		//if (GetKeyState(VK_UP) & 0x8000)        player.y -= 5;
+		//if (GetKeyState(VK_DOWN) & 0x8000)      player.y += 5;
 
 		if (input.LEFT)      player.x -= 5;
 		if (input.RIGHT)     player.x += 5;
