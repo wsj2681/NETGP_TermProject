@@ -129,7 +129,12 @@ DWORD WINAPI PlayerThread(LPVOID arg)
 	{
 		recv(client_sock, (char*)&input, sizeof(input), 0);
 		gameTimerFunc();
-		SendObject(client_sock);	
+		SendObject(client_sock);
+		
+		if (!player.state)
+		{
+
+		}
 	}
 
 	return 0;
@@ -531,184 +536,177 @@ int IsItemCollisionCheck(Move& item, Move& player)
 
 void gameTimerFunc()
 {
-	if (START && (!Gameover))
+
+	if (GetKeyState(VK_LEFT) & 0x8000)      player.x -= 5;
+	if (GetKeyState(VK_RIGHT) & 0x8000)     player.x += 5;
+	if (GetKeyState(VK_UP) & 0x8000)        player.y -= 5;
+	if (GetKeyState(VK_DOWN) & 0x8000)      player.y += 5;
+
+	backGround1.y += 5;
+	backGround2.y += 5;
+
+	if (backGround1.y >= 800)
 	{
-		//
-		//if (GetKeyState(VK_LEFT) & 0x8000)      player.x -= 5;
-		//if (GetKeyState(VK_RIGHT) & 0x8000)     player.x += 5;
-		//if (GetKeyState(VK_UP) & 0x8000)        player.y -= 5;
-		//if (GetKeyState(VK_DOWN) & 0x8000)      player.y += 5;
+		backGround1.y = -800;
+	}
+	if (backGround2.y >= 800)
+	{
+		backGround2.y = -800;
+	}
 
-		if (input.LEFT)      player.x -= 5;
-		if (input.RIGHT)     player.x += 5;
-		if (input.UP)        player.y -= 5;
-		if (input.DOWN)      player.y += 5;
+	playerCollisionCheck(player);
 
-		backGround1.y += 5;
-		backGround2.y += 5;
-
-		if (backGround1.y >= 800)
+	score++;
+	//아이템 드롭 = 종류 설정
+	item_Drop_Timer++;
+	if (item_Drop_Timer % 50 == 0)
+	{
+		if (item_Drop[item_Count].state == 0)
 		{
-			backGround1.y = -800;
+			item_Drop[item_Count].state = rand() % 5 + 1;
+			item_Drop[item_Count].x = rand() % 450;
+			item_Drop[item_Count].y = -30;
+			item_Drop[item_Count].w = 40;
+			item_Drop[item_Count].h = 40;
+			item_Drop[item_Count].picX = 0;
+			item_Drop[item_Count].picY = 0;
+			item_Drop[item_Count].picW = 40;
+			item_Drop[item_Count].picH = 40;
 		}
-		if (backGround2.y >= 800)
-		{
-			backGround2.y = -800;
-		}
+		//cout << item_Drop[item_Count].state << endl;
+		item_Count++;
+		if (item_Count >= 20)
+			item_Count = 0;
+	}
 
-		playerCollisionCheck(player);
+	//아이템 드롭 => 이동 + 아이템 드롭 + 플레이어 충돌
+	for (int i = 0; i < 20; ++i)
+	{
 
-		score++;
-		//아이템 드롭 = 종류 설정
-		item_Drop_Timer++;
-		if (item_Drop_Timer % 50 == 0)
+		if (item_Drop[i].state != 0)
 		{
-			if (item_Drop[item_Count].state == 0)
+			item_Drop[i].y += 2;
+
+			if (item_Drop[i].y + item_Drop[i].h >= 800)
+				item_Drop[i].state = 0;
+
+			//드롭 아이템과 충돌체크
+			//1p일때 
+			if (IsItemCollisionCheck(item_Drop[i], player))
 			{
-				item_Drop[item_Count].state = rand() % 5 + 1;
-				item_Drop[item_Count].x = rand() % 450;
-				item_Drop[item_Count].y = -30;
-				item_Drop[item_Count].w = 40;
-				item_Drop[item_Count].h = 40;
-				item_Drop[item_Count].picX = 0;
-				item_Drop[item_Count].picY = 0;
-				item_Drop[item_Count].picW = 40;
-				item_Drop[item_Count].picH = 40;
-			}
-			//cout << item_Drop[item_Count].state << endl;
-			item_Count++;
-			if (item_Count >= 20)
-				item_Count = 0;
-		}
+				if (item_Drop[i].state == 1)
+				{
+					if (item_1_count == 10)
+					{
+						item_1_count = 0;
+					}
+					item_1[item_1_count].x = item_Drop[i].x - 100;
+					item_1[item_1_count].y = item_Drop[i].y - 100;
 
-		//아이템 드롭 => 이동 + 아이템 드롭 + 플레이어 충돌
-		for (int i = 0; i < 20; ++i)
-		{
+					item_1_Flag[item_1_count] = 1;
+					ITEM1(item_1[item_1_count], item_1_count);
 
-			if (item_Drop[i].state != 0)
-			{
-				item_Drop[i].y += 2;
-
-				if (item_Drop[i].y + item_Drop[i].h >= 800)
+					item_1_count++;
 					item_Drop[i].state = 0;
-
-				//드롭 아이템과 충돌체크
-				//1p일때 
-				if (IsItemCollisionCheck(item_Drop[i], player))
+				}
+				if (item_Drop[i].state == 2)
 				{
-					if (item_Drop[i].state == 1)
+					interrupt_ITEM2_Flag = 1;
+					item_Drop[i].state = 0;
+				}
+
+				if (item_Drop[i].state == 3)
+				{
+					if (item_6_count == 10)
 					{
-						if (item_1_count == 10)
-						{
-							item_1_count = 0;
-						}
-						item_1[item_1_count].x = item_Drop[i].x - 100;
-						item_1[item_1_count].y = item_Drop[i].y - 100;
-
-						item_1_Flag[item_1_count] = 1;
-						ITEM1(item_1[item_1_count], item_1_count);
-
-						item_1_count++;
-						item_Drop[i].state = 0;
+						item_6_count = 0;
 					}
-					if (item_Drop[i].state == 2)
-					{
-						interrupt_ITEM2_Flag = 1;
-						item_Drop[i].state = 0;
-					}
+					item_6[item_6_count].x = item_Drop[i].x - 50;
+					item_6[item_6_count].y = item_Drop[i].y - 50;
 
-					if (item_Drop[i].state == 3)
-					{
-						if (item_6_count == 10)
-						{
-							item_6_count = 0;
-						}
-						item_6[item_6_count].x = item_Drop[i].x - 50;
-						item_6[item_6_count].y = item_Drop[i].y - 50;
+					item_6_Flag[item_6_count] = 1;
+					ITEM6(item_6[item_6_count], item_6_count);
+					item_6_count++;
+					item_Drop[i].state = 0;
+				}
 
-						item_6_Flag[item_6_count] = 1;
-						ITEM6(item_6[item_6_count], item_6_count);
-						item_6_count++;
-						item_Drop[i].state = 0;
+				if (item_Drop[i].state == 4)
+				{
+					if (item_8_count == 10)
+					{
+						item_8_count = 0;
 					}
 
-					if (item_Drop[i].state == 4)
+					item_8[item_8_count].x = player.x - 65;
+					item_8[item_8_count].y = player.y - 60;
+
+
+					item_8_Flag[item_8_count] = 1;
+					ITEM8(player, item_8[item_8_count], item_8_count);
+
+					item_8[item_8_count].collisionWithWho = 1;
+					item_8_count++;
+					item_Drop[i].state = 0;
+				}
+
+				if (item_Drop[i].state == 5)
+				{
+					if (item_10_count == 10)
 					{
-						if (item_8_count == 10)
-						{
-							item_8_count = 0;
-						}
-
-						item_8[item_8_count].x = player.x - 65;
-						item_8[item_8_count].y = player.y - 60;
-
-
-						item_8_Flag[item_8_count] = 1;
-						ITEM8(player, item_8[item_8_count], item_8_count);
-
-						item_8[item_8_count].collisionWithWho = 1;
-						item_8_count++;
-						item_Drop[i].state = 0;
+						item_10_count = 0;
 					}
+					item_10[item_10_count].x = item_Drop[i].x;
+					item_10[item_10_count].y = item_Drop[i].y - 50;
 
-					if (item_Drop[i].state == 5)
-					{
-						if (item_10_count == 10)
-						{
-							item_10_count = 0;
-						}
-						item_10[item_10_count].x = item_Drop[i].x;
-						item_10[item_10_count].y = item_Drop[i].y - 50;
+					item_10_Flag[item_10_count] = 1;
+					ITEM10(player, item_10[item_10_count], item_10_count);
 
-						item_10_Flag[item_10_count] = 1;
-						ITEM10(player, item_10[item_10_count], item_10_count);
+					item_10[item_10_count].collisionWithWho = 1;
 
-						item_10[item_10_count].collisionWithWho = 1;
-
-						item_Drop[i].state = 0;
-						item_10_count++;
-					}
+					item_Drop[i].state = 0;
+					item_10_count++;
 				}
 			}
-			//아이템 플래그 확인
-			for (int i = 0; i < 10; ++i)
+		}
+		//아이템 플래그 확인
+		for (int i = 0; i < 10; ++i)
+		{
+			if (score % 2 == 0)
 			{
-				if (score % 2 == 0)
+				//아이템 1 플래그
+				if (item_1_Flag[i] == 1)
 				{
-					//아이템 1 플래그
-					if (item_1_Flag[i] == 1)
-					{
-						ITEM1(item_1[i], i);
-					}
+					ITEM1(item_1[i], i);
+				}
 
-					//아이템 6 플래그
-					if (item_6_Flag[i] != 0)
-					{
-						ITEM6(item_6[i], i);
-					}
+				//아이템 6 플래그
+				if (item_6_Flag[i] != 0)
+				{
+					ITEM6(item_6[i], i);
+				}
 
-					//아이템 8 플래그
-					if (item_8_Flag[i] != 0)
-					{
-						if (item_8[i].collisionWithWho == 1)
-							ITEM8(player, item_8[i], i);
-					}
+				//아이템 8 플래그
+				if (item_8_Flag[i] != 0)
+				{
+					if (item_8[i].collisionWithWho == 1)
+						ITEM8(player, item_8[i], i);
+				}
 
-					//아이템 10 플래그
-					if (item_10_Flag[i] != 0)
-					{
-						if (item_10[i].collisionWithWho == 1)
-							ITEM10(player, item_10[i], i);
-					}
+				//아이템 10 플래그
+				if (item_10_Flag[i] != 0)
+				{
+					if (item_10[i].collisionWithWho == 1)
+						ITEM10(player, item_10[i], i);
 				}
 			}
-			//방해요소 2 플래그 on 
-			if (interrupt_ITEM2_Flag == 1)
-			{
-				interrupted_ITEM_2();
-			}
+		}
+		//방해요소 2 플래그 on 
+		if (interrupt_ITEM2_Flag == 1)
+		{
+			interrupted_ITEM_2();
 		}
 	}
+
 	//죽었는지
 	if (player.state == 0)
 	{
