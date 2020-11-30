@@ -294,9 +294,6 @@ void SendObject(SOCKET client_sock)
 
 	send(client_sock, (char*)&player, sizeof(player), 0);
 
-	send(client_sock, (char*)&backGround1, sizeof(backGround1), 0);
-	send(client_sock, (char*)&backGround2, sizeof(backGround2), 0);
-
 	for (auto& i : item_1)
 	{
 		send(client_sock, (char*)&i, sizeof(i), 0);

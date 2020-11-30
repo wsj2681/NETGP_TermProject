@@ -55,7 +55,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdPa
 		err_quit("connect()");
 
 	//준비 완료 상태
-	retval = send(sock, (char*)"Ready", sizeof("Ready"), 0); 
+	retval = send(sock, (char*)"Ready", sizeof("Ready"), 0);
 
 	// 서버에서 게임 시작 신호 받기
 	char GameStart[10];
@@ -64,11 +64,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdPa
 	hWnd = CreateWindow(lpszClass, "레이디 버그", WS_OVERLAPPEDWINDOW | WS_SYSMENU | WS_THICKFRAME, 0, 0, 500, 800, NULL, (HMENU)NULL, hInstance, NULL);
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
+
 	while (GetMessage(&Message, 0, 0, 0))
 	{
 		TranslateMessage(&Message);
 		DispatchMessage(&Message);
 	}
+
+	//send(sock, (char*)&Gameover, sizeof(Gameover), 0);
+
 	return Message.wParam;
 }
 
@@ -185,6 +189,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 
 		RecvObject();
 		InvalidateRgn(hWnd, NULL, FALSE);
+		if (!player.state)
+		{
+			Gameover = true;
+		}
+
 		break;
 	case WM_PAINT:
 		hDC = BeginPaint(hWnd, &ps);
@@ -236,19 +245,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			SelectObject(memdc, oldFont);
 			DeleteObject(myFont);
 		}
-
-		if (pause)
-		{
-			SetTextColor(memdc, RGB(255, 255, 255));
-			SetBkMode(memdc, TRANSPARENT);
-			myFont = CreateFont(80, 00, 0, 0, 500, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, TEXT("고딕"));
-			oldFont = (HFONT)SelectObject(memdc, myFont);
-			wsprintf(str, "PAUSE  ", score);
-			TextOut(memdc, 110, 200, str, lstrlen(str));
-			SelectObject(memdc, oldFont);
-			DeleteObject(myFont);
-		}
-
 		if (!START)
 		{
 			//cout << mx << my << endl;
@@ -422,7 +418,6 @@ void MenuClick()
 			if (450 < my && my < 520)
 			{
 				START = false;
-				Gameover = false;
 				menu_check = 0;
 
 				SecondPlayer.x = 230;
@@ -459,7 +454,7 @@ void MenuClick()
 				}
 				interrupt_ITEM2_Flag = 0;
 				key = 0;
-
+				
 			}
 		}
 	}
@@ -548,9 +543,6 @@ void RecvObject()
 	}
 
 	recv(sock, (char*)&player, sizeof(player), 0);
-
-	recv(sock, (char*)&backGround1, sizeof(backGround1), 0);
-	recv(sock, (char*)&backGround2, sizeof(backGround2), 0);
 
 	for (auto& i : item_1)
 	{
