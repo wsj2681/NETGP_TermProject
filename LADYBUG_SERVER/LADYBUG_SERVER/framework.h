@@ -1,6 +1,6 @@
 #pragma once
 
-#define MONSTER 100
+#define MONSTER 10
 
 #define BUFFERSIZE 512
 #define SERVERPORT 9000
@@ -81,6 +81,7 @@ void ITEM1(Move& item_1, int i)
 
 	item_1.picX = 0 + (item_1_frame[i] * 230);
 	item_1.picY = item_1_carry[i] * 226;
+
 	item_1_frame[i]++;
 
 	if (item_1_frame[i] >= 8)

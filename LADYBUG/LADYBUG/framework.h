@@ -23,7 +23,7 @@ using namespace std;
 
 #include <winsock2.h>
 #pragma comment(lib, "ws2_32")
-#define MONSTER 100
+#define MONSTER 10
 #define SERVERIP   "127.0.0.1"
 #define SERVERPORT 9000
 #define BUFSIZE    512
@@ -129,6 +129,8 @@ static CImage menu[4];
 static CImage item_menu[6];
 
 static BOOL Gameover = false;
+static BOOL Gameover2 = false;
+
 static int mx, my;
 static int score;
 static int bug_num;

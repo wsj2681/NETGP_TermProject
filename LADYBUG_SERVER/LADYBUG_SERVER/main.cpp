@@ -88,7 +88,7 @@ int main()
 			", 포트 번호=" << ntohs(client_addr.sin_port) << endl;
 
 		hThread[threadCount] = CreateThread(nullptr, 0, PlayerThread, (LPVOID)client_sock, 0, &dwThreadID[threadCount]);
-		
+
 		threadCount++;
 	}
 
@@ -131,20 +131,33 @@ DWORD WINAPI PlayerThread(LPVOID arg)
 	SendGameInit(client_sock);
 
 	DWORD id = dwThreadID[threadIndex];
+
 	while (true)
 	{
+		if (!player.state)
+		{
+			while (true)
+			{
+				UpdateFunction();
+			}
+			TerminateThread(hThread[0], 0);
+		}
+		if (!player2.state)
+		{
+			TerminateThread(hThread[1], 0);
+		}
 		recv(client_sock, (char*)&input, sizeof(input), 0);
-
+		
 		EnterCriticalSection(&cs);
 		UpdatePlayer(id);
 		LeaveCriticalSection(&cs);
-
+		
 		UpdateFunction();
 		SendObject(client_sock);
-		
-		if (!player.state)
-		{
 
+		if (!player.state && !player2.state)
+		{
+			return 0;
 		}
 	}
 
@@ -373,7 +386,6 @@ void SendObject(SOCKET client_sock)
 	{
 		send(client_sock, (char*)&i, sizeof(i), 0);
 	}
-	cout << "Send OK" << endl;
 }
 
 static int key = 0;
@@ -597,7 +609,7 @@ void UpdateFunction()
 
 			//드롭 아이템과 충돌체크
 			//1p일때 
-			if (IsItemCollisionCheck(item_Drop[i], player))
+			if (IsItemCollisionCheck(item_Drop[i], player)|| IsItemCollisionCheck(item_Drop[i], player2))
 			{
 				if (item_Drop[i].state == 1)
 				{
@@ -721,9 +733,9 @@ void UpdateFunction()
 	{
 
 	}
-	//bug[bug_num].x = (rand() % 500);//버그 x좌표
-	//bug[bug_num].y = -1;//버그 y좌표
-	//bug[bug_num].y_move = (rand() % 3) + 2;//버그 y좌표 이동값
+	bug[bug_num].x = (rand() % 500);//버그 x좌표
+	bug[bug_num].y = -1;//버그 y좌표
+	bug[bug_num].y_move = (rand() % 3) + 2;//버그 y좌표 이동값
 
 	for (int i = 0; i < 10; ++i)
 	{
@@ -749,7 +761,7 @@ void UpdateFunction()
 	}
 	else
 	{
-		if (rand() % 4 == 0)
+		if (rand() % 1 == 0)
 		{
 			bug_num++;//버그 수 증가
 		}
