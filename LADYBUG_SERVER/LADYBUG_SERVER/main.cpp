@@ -1,6 +1,4 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
-
-
 #include "framework.h"
 
 default_random_engine dre;
@@ -25,14 +23,12 @@ Input input;
 void GameValueInit();
 void SendGameInit(SOCKET client_sock);
 
-void gameTimerFunc();
+void UpdateFunction();
 void SendObject(SOCKET client_sock);
-
 
 // ErrorFunction
 void err_quit(const char* msg);
 void err_display(const char* msg);
-
 
 int main()
 {
@@ -67,7 +63,7 @@ int main()
 	HANDLE hThread[MAXTHREAD];
 	int threadCount = 0;
 
-	cout << " 서버 시작 " << endl;
+	cout << "**** 서버 시작 ****" << endl;
 
 	while (true)
 	{
@@ -128,7 +124,7 @@ DWORD WINAPI PlayerThread(LPVOID arg)
 	while (true)
 	{
 		recv(client_sock, (char*)&input, sizeof(input), 0);
-		gameTimerFunc();
+		UpdateFunction();
 		SendObject(client_sock);
 		
 		if (!player.state)
@@ -486,58 +482,56 @@ void collisionCheck(Move& item)
 //아이템드롭 + 플레이어 충돌
 int IsItemCollisionCheck(Move& item, Move& player)
 {
-	//for (int i = 0; i < MONSTER; ++i)
+	//아이템 top에서 충돌
+	if (((item.x <= player.x + 30 && player.x + 30 <= item.x + item.w) && (0 <= item.y - (player.y + 30) && item.y - (player.y + 30) <= 10)) ||
+		((item.x <= player.x && player.x <= item.x + item.w) && (0 <= item.y - (player.y + 30) && item.y - (player.y + 30) <= 10)))
 	{
-		//아이템 top에서 충돌
-		if (((item.x <= player.x + 30 && player.x + 30 <= item.x + item.w) && (0 <= item.y - (player.y + 30) && item.y - (player.y + 30) <= 10)) ||
-			((item.x <= player.x && player.x <= item.x + item.w) && (0 <= item.y - (player.y + 30) && item.y - (player.y + 30) <= 10)))
-		{
-			return 1;
-		}
+		return 1;
+	}
 
-		//아이템 left에서 충돌
-		else if (((item.y <= player.y && player.y <= item.y + item.h) && (0 <= item.x - (player.x + 30) && item.x - (player.x + 30) <= 10)) ||
-			((item.y <= player.y + 30 && player.y + 30 <= item.y + item.h) && (0 <= item.x - (player.x + 30) && item.x - (player.x + 30) <= 10)))
-		{
-			return 1;
+	//아이템 left에서 충돌
+	else if (((item.y <= player.y && player.y <= item.y + item.h) && (0 <= item.x - (player.x + 30) && item.x - (player.x + 30) <= 10)) ||
+		((item.y <= player.y + 30 && player.y + 30 <= item.y + item.h) && (0 <= item.x - (player.x + 30) && item.x - (player.x + 30) <= 10)))
+	{
+		return 1;
+	}
 
-		}
+	//아이템 right에서 충돌
+	else if (((item.y <= player.y && player.y <= item.y + item.h) && (0 <= player.x - (item.x + item.w) && player.x - (item.x + item.w) <= 10)) ||
+		((item.y <= player.y + 30 && player.y + 30 <= item.y + item.h) && (0 <= player.x - (item.x + item.w) && player.x - (item.x + item.w) <= 10)))
+	{
+		return 1;
+	}
 
-		//아이템 right에서 충돌
-		else if (((item.y <= player.y && player.y <= item.y + item.h) && (0 <= player.x - (item.x + item.w) && player.x - (item.x + item.w) <= 10)) ||
-			((item.y <= player.y + 30 && player.y + 30 <= item.y + item.h) && (0 <= player.x - (item.x + item.w) && player.x - (item.x + item.w) <= 10)))
-		{
-			return 1;
+	//아이템 bottom에서 충돌
+	else if (((item.x <= player.x + 30 && player.x + 30 <= item.x + item.w) && (0 <= player.y - (item.y + item.h) && player.y - (item.y + item.h) <= 10)) ||
+		((item.x <= player.x && player.x <= item.x + item.w) && (0 <= player.y - (item.y + item.h) && player.y - (item.y + item.h) <= 10)))
+	{
+		return 1;
+	}
 
-		}
-
-		//아이템 bottom에서 충돌
-		else if (((item.x <= player.x + 30 && player.x + 30 <= item.x + item.w) && (0 <= player.y - (item.y + item.h) && player.y - (item.y + item.h) <= 10)) ||
-			((item.x <= player.x && player.x <= item.x + item.w) && (0 <= player.y - (item.y + item.h) && player.y - (item.y + item.h) <= 10)))
-		{
-			return 1;
-
-		}
-
-		//아이템 내부에서 충돌
-		else if ((item.x <= player.x + 30 && player.x + 30 <= item.x + item.w) && (item.x <= player.x && player.x <= item.x + item.w) &&
-			(item.y <= player.y && player.y <= item.y + item.h) && (item.y <= player.y + 30 && player.y + 30 <= item.y + item.h))
-		{
-			return 1;
-
-		}
-
+	//아이템 내부에서 충돌
+	else if ((item.x <= player.x + 30 && player.x + 30 <= item.x + item.w) && (item.x <= player.x && player.x <= item.x + item.w) &&
+		(item.y <= player.y && player.y <= item.y + item.h) && (item.y <= player.y + 30 && player.y + 30 <= item.y + item.h))
+	{
+		return 1;
 	}
 	return 0;
 }
 
-void gameTimerFunc()
+void UpdateFunction()
 {
 
-	if (GetKeyState(VK_LEFT) & 0x8000)      player.x -= 5;
-	if (GetKeyState(VK_RIGHT) & 0x8000)     player.x += 5;
-	if (GetKeyState(VK_UP) & 0x8000)        player.y -= 5;
-	if (GetKeyState(VK_DOWN) & 0x8000)      player.y += 5;
+	//if (GetKeyState(VK_LEFT) & 0x8000)      player.x -= 5;
+	//if (GetKeyState(VK_RIGHT) & 0x8000)     player.x += 5;
+	//if (GetKeyState(VK_UP) & 0x8000)        player.y -= 5;
+	//if (GetKeyState(VK_DOWN) & 0x8000)      player.y += 5;
+
+	if (input.LEFT)player.x -= 5;
+	if (input.RIGHT)player.x += 5;
+	if (input.UP)player.y -= 5;
+	if (input.DOWN)player.y += 5;
+
 
 	backGround1.y += 5;
 	backGround2.y += 5;

@@ -73,7 +73,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdPa
 
 	//send(sock, (char*)&Gameover, sizeof(Gameover), 0);
 
-	return Message.wParam;
+	return (int)Message.wParam;
 }
 
 HINSTANCE hInst;
@@ -272,10 +272,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 
 void gameValueInit()
 {
-	item_1_count = 0;
-	item_6_count = 0;
-	item_8_count = 0;
-	item_10_count = 0;
+	BIgFlowerindex = 0;
+	BallBugIndex = 0;
+	cosmosIndex = 0;
+	barriorIndex = 0;
 
 	for (auto& i : bug)
 	{
@@ -287,71 +287,59 @@ void gameValueInit()
 	recv(sock, (char*)&backGround1, sizeof(backGround1), 0);
 	recv(sock, (char*)&backGround2, sizeof(backGround2), 0);
 
-	for (auto& i : item_1)
+	for (auto& i : itemBigFlower)
 	{
 		recv(sock, (char*)&i, sizeof(i), 0);
 	}
 
-	for (auto& i : item_6)
+	for (auto& i : itemBallBug)
 	{
 		recv(sock, (char*)&i, sizeof(i), 0);
 	}
 
-	for (auto& i : item_8)
+	for (auto& i : cosmos)
 	{
 		recv(sock, (char*)&i, sizeof(i), 0);
 	}
 
-	for (auto& i : item_10)
+	for (auto& i : itemBarrior)
 	{
 		recv(sock, (char*)&i, sizeof(i), 0);
 	}
 
-	BACKGROUND.Load(TEXT("진짜배경1.png"));
-	ITEM_1.Load(TEXT("아이템11.png"));
-	ITEM_6.Load(TEXT("아이템6.png"));
-	ITEM_8.Load(TEXT("아이템8.png"));
-	ITEM_10.Load(TEXT("아이템10.png"));
-	INTERRUPT_ITEM2.Load(TEXT("방해2.png"));
-	PLAYER.Load(TEXT("레이디버그.bmp"));
-	SECONDPLAYER.Load(TEXT("레이디버그2.png"));
-	BUG_image.Load(TEXT("적.bmp"));
+	INTERRUPT_ITEM2.Load(TEXT("Images/방해2.png"));
+	BigFlowerSheet.Load(TEXT("Images/아이템11.png"));
+	BallBugSheet.Load(TEXT("Images/아이템6.png"));
+	CosMosSheet.Load(TEXT("Images/아이템8.png"));
+	BACKGROUND.Load(TEXT("Images/진짜배경1.png"));
+	Barrior.Load(TEXT("Images/아이템10.png"));
+	PLAYER.Load(TEXT("Images/레이디버그.bmp"));
+	//SECONDPLAYER.Load(TEXT("Images/레이디버그2.png"));
+	BUG_image.Load(TEXT("Images/적.bmp"));
 
-	image1.Load(TEXT("1.png"));
-	image2.Load(TEXT("2.png"));
-	image6.Load(TEXT("6.png"));
-	image8.Load(TEXT("8.png"));
-	image10.Load(TEXT("10.png"));
+	imageBigFlower.Load(TEXT("Images/1.png"));
+	imageBallBug.Load(TEXT("Images/6.png"));
+	imageCosMos.Load(TEXT("Images/8.png"));
+	imageBarrior.Load(TEXT("Images/10.png"));
 
-	impact[0].Load(TEXT("빨간 빤짝.png"));
-	impact[1].Load(TEXT("주황 빤짝.png"));
-	impact[2].Load(TEXT("노란 빤짝.png"));
-	impact[3].Load(TEXT("연두 빤짝.png"));
-	impact[4].Load(TEXT("초록 빤짝.png"));
-	impact[5].Load(TEXT("하늘 빤짝.png"));
-	impact[6].Load(TEXT("파란 빤짝.png"));
-	impact[7].Load(TEXT("보라 빤짝.png"));
+	menu[0].Load(TEXT("Images/메뉴.png"));
+	menu[1].Load(TEXT("Images/메뉴_아이템.png"));
+	menu[2].Load(TEXT("Images/메뉴_1p.png"));
+	menu[3].Load(TEXT("Images/메뉴_2p.png"));
 
-	menu[0].Load(TEXT("메뉴.png"));
-	menu[1].Load(TEXT("메뉴_아이템.png"));
-	menu[2].Load(TEXT("메뉴_1p.png"));
-	menu[3].Load(TEXT("메뉴_2p.png"));
+	item_menu[0].Load(TEXT("Images/아이템 메뉴1.png"));
+	item_menu[1].Load(TEXT("Images/아이템 메뉴2.png"));
+	item_menu[2].Load(TEXT("Images/아이템 메뉴1-1.png"));
+	item_menu[3].Load(TEXT("Images/아이템 메뉴1-2.png"));
+	item_menu[4].Load(TEXT("Images/아이템 메뉴2-1.png"));
+	item_menu[5].Load(TEXT("Images/아이템 메뉴2-2.png"));
 
-	item_menu[0].Load(TEXT("아이템 메뉴1.png"));
-	item_menu[1].Load(TEXT("아이템 메뉴2.png"));
-	item_menu[2].Load(TEXT("아이템 메뉴1-1.png"));
-	item_menu[3].Load(TEXT("아이템 메뉴1-2.png"));
-	item_menu[4].Load(TEXT("아이템 메뉴2-1.png"));
-	item_menu[5].Load(TEXT("아이템 메뉴2-2.png"));
-
-	GAME_OVER[0].Load(TEXT("종료 화면1.png"));
-	GAME_OVER[1].Load(TEXT("종료 화면2.png"));
+	GAME_OVER[0].Load(TEXT("Images/종료 화면1.png"));
+	GAME_OVER[1].Load(TEXT("Images/종료 화면2.png"));
 
 	mx = 235;
 	my = 700;
 	score = 0;
-
-	
 }
 
 void MenuClick()
@@ -420,14 +408,14 @@ void MenuClick()
 				START = false;
 				menu_check = 0;
 
-				SecondPlayer.x = 230;
-				SecondPlayer.y = 700;
+				/*SecondPlayer.x = 230;
+				SecondPlayer.y = 700;*/
 				player.x = 235;
 				player.y = 650;
 				score = 0;
-				bug_num = 0;
+
 				player.state = 1;
-				SecondPlayer.state = 1;
+				/*SecondPlayer.state = 1;*/
 				mode_2p = false;
 				for (int i = 0; i < 500; i++)
 				{
@@ -441,10 +429,10 @@ void MenuClick()
 				{
 					item_Drop[i].state = 0;
 				}
-				item_1_count = 0;
-				item_6_count = 0;
-				item_8_count = 0;
-				item_10_count = 0;
+				BIgFlowerindex = 0;
+				BallBugIndex = 0;
+				cosmosIndex = 0;
+				barriorIndex = 0;
 				for (int i = 0; i < 10; i++)
 				{
 					item_1_Flag[i] = 0;
@@ -544,22 +532,22 @@ void RecvObject()
 
 	recv(sock, (char*)&player, sizeof(player), 0);
 
-	for (auto& i : item_1)
+	for (auto& i : itemBigFlower)
 	{
 		recv(sock, (char*)&i, sizeof(i), 0);
 	}
 
-	for (auto& i : item_6)
+	for (auto& i : itemBallBug)
 	{
 		recv(sock, (char*)&i, sizeof(i), 0);
 	}
 
-	for (auto& i : item_8)
+	for (auto& i : cosmos)
 	{
 		recv(sock, (char*)&i, sizeof(i), 0);
 	}
 
-	for (auto& i : item_10)
+	for (auto& i : itemBarrior)
 	{
 		recv(sock, (char*)&i, sizeof(i), 0);
 	}
@@ -603,19 +591,18 @@ void RecvObject()
 
 void DrawItems(HDC memdc)
 {
-	//아이템 드롭
 	for (int i = 0; i < 20; ++i)
 	{
 		if (item_Drop[i].state == 1)
-			image1.TransparentBlt(memdc, item_Drop[i].x, item_Drop[i].y, item_Drop[i].w, item_Drop[i].h, item_Drop[i].picX, item_Drop[i].picY, item_Drop[i].picW, item_Drop[i].picH, RGB(0, 255, 255));
+			imageBigFlower.TransparentBlt(memdc, item_Drop[i].x, item_Drop[i].y, item_Drop[i].w, item_Drop[i].h, item_Drop[i].picX, item_Drop[i].picY, item_Drop[i].picW, item_Drop[i].picH, RGB(0, 255, 255));
 		if (item_Drop[i].state == 2)
 			INTERRUPT_ITEM2.Draw(memdc, item_Drop[i].x, item_Drop[i].y, item_Drop[i].w, item_Drop[i].h, item_Drop[i].picX, item_Drop[i].picY, item_Drop[i].picW, item_Drop[i].picH);
 		if (item_Drop[i].state == 3)
-			image6.TransparentBlt(memdc, item_Drop[i].x, item_Drop[i].y, item_Drop[i].w, item_Drop[i].h, item_Drop[i].picX, item_Drop[i].picY, item_Drop[i].picW, item_Drop[i].picH, RGB(0, 255, 255));
+			imageBallBug.TransparentBlt(memdc, item_Drop[i].x, item_Drop[i].y, item_Drop[i].w, item_Drop[i].h, item_Drop[i].picX, item_Drop[i].picY, item_Drop[i].picW, item_Drop[i].picH, RGB(0, 255, 255));
 		if (item_Drop[i].state == 4)
-			image8.TransparentBlt(memdc, item_Drop[i].x, item_Drop[i].y, item_Drop[i].w, item_Drop[i].h, item_Drop[i].picX, item_Drop[i].picY, item_Drop[i].picW, item_Drop[i].picH, RGB(0, 255, 255));
+			imageCosMos.TransparentBlt(memdc, item_Drop[i].x, item_Drop[i].y, item_Drop[i].w, item_Drop[i].h, item_Drop[i].picX, item_Drop[i].picY, item_Drop[i].picW, item_Drop[i].picH, RGB(0, 255, 255));
 		if (item_Drop[i].state == 5)
-			image10.TransparentBlt(memdc, item_Drop[i].x, item_Drop[i].y, item_Drop[i].w, item_Drop[i].h, item_Drop[i].picX, item_Drop[i].picY, item_Drop[i].picW, item_Drop[i].picH, RGB(0, 255, 255));
+			imageBarrior.TransparentBlt(memdc, item_Drop[i].x, item_Drop[i].y, item_Drop[i].w, item_Drop[i].h, item_Drop[i].picX, item_Drop[i].picY, item_Drop[i].picW, item_Drop[i].picH, RGB(0, 255, 255));
 	}
 
 	//아이템 그리기
@@ -624,35 +611,35 @@ void DrawItems(HDC memdc)
 		//아이템 1
 		if (item_1_Flag[i] == 1)
 		{
-			ITEM_1.Draw(memdc, item_1[i].x, item_1[i].y, item_1[i].w, item_1[i].h, item_1[i].picX, item_1[i].picY, item_1[i].picW, item_1[i].picH);
+			BigFlowerSheet.Draw(memdc, itemBigFlower[i].x, itemBigFlower[i].y, itemBigFlower[i].w, itemBigFlower[i].h, itemBigFlower[i].picX, itemBigFlower[i].picY, itemBigFlower[i].picW, itemBigFlower[i].picH);
 		}
 
 		//아이템 6
 		if (item_6_Flag[i] == 1)
 		{
-			ITEM_6.Draw(memdc, item_6[i].x, item_6[i].y, item_6[i].w, item_6[i].h, item_6[i].picX, item_6[i].picY, item_6[i].picW, item_6[i].picH);
+			BallBugSheet.Draw(memdc, itemBallBug[i].x, itemBallBug[i].y, itemBallBug[i].w, itemBallBug[i].h, itemBallBug[i].picX, itemBallBug[i].picY, itemBallBug[i].picW, itemBallBug[i].picH);
 		}
 
 		//아이템 8
 		if (item_8_Flag[i] != 0)
 		{
-			if (item_8[i].collisionWithWho == 1)
+			if (cosmos[i].collisionWithWho == 1)
 			{
 				//주변 맴돌 때
 				if (item_8_Flag[i] == 1)
-					ITEM_8.Draw(memdc, player.x - 65, player.y - 60, item_8[i].w, item_8[i].h, item_8[i].picX, item_8[i].picY, item_8[i].picW, item_8[i].picH);
+					CosMosSheet.Draw(memdc, player.x - 65, player.y - 60, cosmos[i].w, cosmos[i].h, cosmos[i].picX, cosmos[i].picY, cosmos[i].picW, cosmos[i].picH);
 				//앞으로 돌진할 때
 				if (item_8_Flag[i] == 2)
-					ITEM_8.Draw(memdc, item_8[i].x, item_8[i].y, item_8[i].w, item_8[i].h, item_8[i].picX, item_8[i].picY, item_8[i].picW, item_8[i].picH);
+					CosMosSheet.Draw(memdc, cosmos[i].x, cosmos[i].y, cosmos[i].w, cosmos[i].h, cosmos[i].picX, cosmos[i].picY, cosmos[i].picW, cosmos[i].picH);
 			}
 			else
 			{
 				//주변 맴돌 때
-				if (item_8_Flag[i] == 1)
-					ITEM_8.Draw(memdc, SecondPlayer.x - 65, SecondPlayer.y - 60, item_8[i].w, item_8[i].h, item_8[i].picX, item_8[i].picY, item_8[i].picW, item_8[i].picH);
+				//if (item_8_Flag[i] == 1)
+					//CosMosSheet.Draw(memdc, SecondPlayer.x - 65, SecondPlayer.y - 60, item_8[i].w, item_8[i].h, item_8[i].picX, item_8[i].picY, item_8[i].picW, item_8[i].picH);
 				//앞으로 돌진할 때
 				if (item_8_Flag[i] == 2)
-					ITEM_8.Draw(memdc, item_8[i].x, item_8[i].y, item_8[i].w, item_8[i].h, item_8[i].picX, item_8[i].picY, item_8[i].picW, item_8[i].picH);
+					CosMosSheet.Draw(memdc, cosmos[i].x, cosmos[i].y, cosmos[i].w, cosmos[i].h, cosmos[i].picX, cosmos[i].picY, cosmos[i].picW, cosmos[i].picH);
 
 			}
 		}
@@ -660,7 +647,7 @@ void DrawItems(HDC memdc)
 		//아이템 10
 		if (item_10_Flag[i] != 0)
 		{
-			ITEM_10.Draw(memdc, item_10[i].x, item_10[i].y, item_10[i].w, item_10[i].h, item_10[i].picX, item_10[i].picY, item_10[i].picW, item_10[i].picH);
+			Barrior.Draw(memdc, itemBarrior[i].x, itemBarrior[i].y, itemBarrior[i].w, itemBarrior[i].h, itemBarrior[i].picX, itemBarrior[i].picY, itemBarrior[i].picW, itemBarrior[i].picH);
 		}
 	}
 
@@ -669,32 +656,13 @@ void DrawItems(HDC memdc)
 	{
 		PLAYER.TransparentBlt(memdc, player.x, player.y, player.w, player.h, player.picX, player.picY, player.picW, player.picH, RGB(255, 255, 255));//플레이어
 	}
-	if (mode_2p)
-	{
-		if (SecondPlayer.state == 1)
-		{
-			SECONDPLAYER.Draw(memdc, SecondPlayer.x, SecondPlayer.y, SecondPlayer.w, SecondPlayer.h, SecondPlayer.picX, SecondPlayer.picY, SecondPlayer.picW, SecondPlayer.picH);//플레이어
-		}
-	}
 
 	//버그
 	for (int i = 0; i < MONSTER; i++)
 	{
-
 		if (bug[i].state == 1)
 		{
 			BUG_image.TransparentBlt(memdc, bug[i].x, bug[i].y, player.w, player.h, player.picX, player.picY, 72, 73, RGB(255, 255, 255));
-		}
-		if (bug[i].impact_num != 9)
-		{
-
-			impact[bug[i].impact_num].Draw(memdc, bug[i].x - 15, bug[i].y - 15, player.w + 15, player.h + 15, bug[i].impact_time * 172, 0, 172, 160);
-			bug[i].impact_time++;
-			if (bug[i].impact_time == 4)
-			{
-				bug[i].impact_time = 0;
-				bug[i].impact_num = 9;
-			}
 		}
 	}
 }

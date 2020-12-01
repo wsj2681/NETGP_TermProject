@@ -1,6 +1,6 @@
 #pragma once
 
-#define MONSTER 500
+#define MONSTER 100
 
 #define BUFFERSIZE 512
 #define SERVERPORT 9000
@@ -18,36 +18,36 @@ using namespace std;
 #pragma comment(lib, "ws2_32")
 
 #pragma pack(push, 1)
-typedef struct Move {
+struct Move {
 
-	float x;
-	float y;
-	int w;
-	int h;
+	int x = 0;
+	int y = 0;
+	int w = 0;
+	int h = 0;
 
-	int picX;
-	int picY;
-	int picW;
-	int picH;
+	int picX = 0;
+	int picY = 0;
+	int picW = 0;
+	int picH = 0;
 
-	int y_move;
-	int x_move;
+	int y_move = 0;
+	int x_move = 0;
 
 	int state = 0;
 
 	int collisionWithWho = 0;
-}Move;
+};
 #pragma pack(pop)
 
 #pragma pack(push, 1)
 static struct BUG
 {
-	float x;
-	float y;
-	float y_move;
-	float x_move;
-	int w;
-	int h;
+	int x = 0;
+	int y = 0;
+	int y_move = 0;
+	int x_move = 0;
+	int w = 0;
+	int h = 0;
 
 	int impact_num = 9;
 	int impact_time = 0;
@@ -266,13 +266,10 @@ static int item_Drop_Timer;
 static Move item_Drop[20];
 static int item_Count;
 
-static float distance = 0;
-static float rotation = 0;
-static float speed = 10;
-
 static int interrupt_ITEM2_Flag = 0;
 static int interrupt_ITEM2_timer = 0;
-static float interrupt_ITEM2_frame = 0;
+static int interrupt_ITEM2_frame = 0;
+
 void interrupted_ITEM_2()
 {
 	if (interrupt_ITEM2_timer < 60)
@@ -292,7 +289,7 @@ void interrupted_ITEM_2()
 	}
 }
 
-static float mx, my;
+static int mx, my;
 static int score;
 static int bug_num;
 
@@ -306,7 +303,7 @@ static int itme_menu_check = 6;
 
 float bug_x_move(BUG bug, Move player)
 {
-	float bug_lean = ((player.y - bug.y) / (player.x - bug.x));
+	float bug_lean = ((float)(player.y - bug.y) / (float)(player.x - bug.x));
 	bug.x_move = bug.y_move / bug_lean;
 	return bug.x_move;
 }
