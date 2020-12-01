@@ -261,6 +261,7 @@ void ITEM10(Move& player, Move& item_10, int i)
 }
 
 static Move player;
+static Move player2;
 
 static int item_Drop_Timer;
 static Move item_Drop[20];

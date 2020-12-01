@@ -163,8 +163,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		if (GetKeyState(VK_DOWN) & 0x8000)
 			input.DOWN = true;
 
-		
-
 		InvalidateRgn(hWnd, NULL, FALSE);
 		break;
 	case WM_LBUTTONDOWN:
@@ -283,6 +281,7 @@ void gameValueInit()
 	}
 
 	recv(sock, (char*)&player, sizeof(player), 0);
+	recv(sock, (char*)&SecondPlayer, sizeof(SecondPlayer), 0);
 
 	recv(sock, (char*)&backGround1, sizeof(backGround1), 0);
 	recv(sock, (char*)&backGround2, sizeof(backGround2), 0);
@@ -314,7 +313,7 @@ void gameValueInit()
 	BACKGROUND.Load(TEXT("Images/진짜배경1.png"));
 	Barrior.Load(TEXT("Images/아이템10.png"));
 	PLAYER.Load(TEXT("Images/레이디버그.bmp"));
-	//SECONDPLAYER.Load(TEXT("Images/레이디버그2.png"));
+	SECONDPLAYER.Load(TEXT("Images/레이디버그2.png"));
 	BUG_image.Load(TEXT("Images/적.bmp"));
 
 	imageBigFlower.Load(TEXT("Images/1.png"));
@@ -531,6 +530,8 @@ void RecvObject()
 	}
 
 	recv(sock, (char*)&player, sizeof(player), 0);
+	recv(sock, (char*)&SecondPlayer, sizeof(SecondPlayer), 0);
+
 
 	for (auto& i : itemBigFlower)
 	{
@@ -655,6 +656,11 @@ void DrawItems(HDC memdc)
 	if (player.state == 1)
 	{
 		PLAYER.TransparentBlt(memdc, player.x, player.y, player.w, player.h, player.picX, player.picY, player.picW, player.picH, RGB(255, 255, 255));//플레이어
+	}
+
+	if (SecondPlayer.state == 1)
+	{
+		SECONDPLAYER.TransparentBlt(memdc, SecondPlayer.x, SecondPlayer.y, SecondPlayer.w, player.h, SecondPlayer.picX, SecondPlayer.picY, SecondPlayer.picW, SecondPlayer.picH, RGB(255, 255, 255));//플레이어2
 	}
 
 	//버그

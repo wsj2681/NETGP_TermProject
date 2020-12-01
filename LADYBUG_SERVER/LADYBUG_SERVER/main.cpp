@@ -13,6 +13,11 @@ uniform_int_distribution<>MoveY(-4, +4);
 
 // Thread ID
 DWORD dwThreadID[MAXTHREAD];
+static int idIndex = 0;
+HANDLE hThread[MAXTHREAD];
+int threadCount = 0;
+
+CRITICAL_SECTION cs;
 
 // ThreadFunction
 DWORD WINAPI PlayerThread(LPVOID arg);
@@ -24,6 +29,8 @@ void GameValueInit();
 void SendGameInit(SOCKET client_sock);
 
 void UpdateFunction();
+void UpdatePlayer(DWORD tID);
+
 void SendObject(SOCKET client_sock);
 
 // ErrorFunction
@@ -60,8 +67,8 @@ int main()
 	int client_addr_len;
 	char buf[BUFFERSIZE + 1];
 
-	HANDLE hThread[MAXTHREAD];
-	int threadCount = 0;
+
+	InitializeCriticalSection(&cs);
 
 	cout << "**** 서버 시작 ****" << endl;
 
@@ -81,12 +88,14 @@ int main()
 			", 포트 번호=" << ntohs(client_addr.sin_port) << endl;
 
 		hThread[threadCount] = CreateThread(nullptr, 0, PlayerThread, (LPVOID)client_sock, 0, &dwThreadID[threadCount]);
-
+		
 		threadCount++;
 	}
 
 	for (auto& i : hThread)
 		CloseHandle(i);
+
+	DeleteCriticalSection(&cs);
 
 	closesocket(listen_sock);
 
@@ -98,7 +107,8 @@ int main()
 DWORD WINAPI PlayerThread(LPVOID arg)
 {
 	int retval;
-
+	int threadIndex = idIndex;
+	idIndex++;
 	SOCKET client_sock = (SOCKET)arg;
 	SOCKADDR_IN client_addr;
 	int client_addr_len;
@@ -120,10 +130,15 @@ DWORD WINAPI PlayerThread(LPVOID arg)
 
 	SendGameInit(client_sock);
 
-
+	DWORD id = dwThreadID[threadIndex];
 	while (true)
 	{
 		recv(client_sock, (char*)&input, sizeof(input), 0);
+
+		EnterCriticalSection(&cs);
+		UpdatePlayer(id);
+		LeaveCriticalSection(&cs);
+
 		UpdateFunction();
 		SendObject(client_sock);
 		
@@ -174,6 +189,18 @@ void GameValueInit()
 	player.picH = 74;
 
 	player.state = 1;
+
+	player2.x = 235;
+	player2.y = 700;
+	player2.w = 30;
+	player2.h = 30;
+
+	player2.picX = 0;
+	player2.picY = 0;
+	player2.picW = 76;
+	player2.picH = 74;
+
+	player2.state = 1;
 
 	backGround1.x = 0;
 	backGround1.y = 0;
@@ -255,6 +282,7 @@ void SendGameInit(SOCKET client_sock)
 	}
 
 	send(client_sock, (char*)&player, sizeof(player), 0);
+	send(client_sock, (char*)&player2, sizeof(player2), 0);
 
 	send(client_sock, (char*)&backGround1, sizeof(backGround1), 0);
 	send(client_sock, (char*)&backGround2, sizeof(backGround2), 0);
@@ -289,6 +317,7 @@ void SendObject(SOCKET client_sock)
 	}
 
 	send(client_sock, (char*)&player, sizeof(player), 0);
+	send(client_sock, (char*)&player2, sizeof(player2), 0);
 
 	for (auto& i : item_1)
 	{
@@ -350,65 +379,61 @@ void SendObject(SOCKET client_sock)
 static int key = 0;
 void playerCollisionCheck(Move& player)
 {
-	if (key != 1)
+	//플레이어 + 버그 충돌
+	for (int i = 0; i < MONSTER; ++i)
 	{
-
-		//플레이어 + 버그 충돌
-		for (int i = 0; i < MONSTER; ++i)
+		if (bug[i].state != 0)
 		{
-			if (bug[i].state != 0)
+			//플레이어 top에서 충돌
+			if ((bug[i].x <= player.x && player.x <= bug[i].x + 30) &&
+				(0 <= bug[i].y + 30 - player.y && bug[i].y + 30 - player.y <= 20))
 			{
-				//플레이어 top에서 충돌
-				if ((bug[i].x <= player.x && player.x <= bug[i].x + 30) &&
-					(0 <= bug[i].y + 30 - player.y && bug[i].y + 30 - player.y <= 20))
-				{
-					player.state = 0;
-				}
-				else if ((bug[i].x <= player.x + 30 && player.x + 30 <= bug[i].x + 30) &&
-					(0 <= player.y - bug[i].y + 30 && player.y - bug[i].y + 30 <= 20))
-				{
-					player.state = 0;
-				}
+				player.state = 0;
+			}
+			else if ((bug[i].x <= player.x + 30 && player.x + 30 <= bug[i].x + 30) &&
+				(0 <= player.y - bug[i].y + 30 && player.y - bug[i].y + 30 <= 20))
+			{
+				player.state = 0;
+			}
 
-				//플레이어 left에서 충돌
-				else if ((bug[i].y <= player.y && player.y <= bug[i].y + 30) &&
-					(0 <= player.x - bug[i].x + 30 && player.x - bug[i].x + 30 <= 20))
-				{
-					player.state = 0;
-				}
-				else if ((bug[i].y <= player.y + 30 && player.y + 30 <= bug[i].y + 30) &&
-					(0 <= player.x - bug[i].x + 30 && player.x - bug[i].x + 30 <= 20))
-				{
-					player.state = 0;
-				}
+			//플레이어 left에서 충돌
+			else if ((bug[i].y <= player.y && player.y <= bug[i].y + 30) &&
+				(0 <= player.x - bug[i].x + 30 && player.x - bug[i].x + 30 <= 20))
+			{
+				player.state = 0;
+			}
+			else if ((bug[i].y <= player.y + 30 && player.y + 30 <= bug[i].y + 30) &&
+				(0 <= player.x - bug[i].x + 30 && player.x - bug[i].x + 30 <= 20))
+			{
+				player.state = 0;
+			}
 
-				//플레이어 right에서 충돌
-				else if ((bug[i].y <= player.y && player.y <= bug[i].y + 30) &&
-					(0 <= bug[i].x - player.x + 30 && bug[i].x - player.x + 30 <= 20))
-				{
-					player.state = 0;
-				}
-				else if ((bug[i].y <= player.y + 30 && player.y + 30 <= bug[i].y + 30) &&
-					(0 <= bug[i].x - player.x + 30 && bug[i].x - player.x + 30 <= 20))
-				{
-					player.state = 0;
-				}
+			//플레이어 right에서 충돌
+			else if ((bug[i].y <= player.y && player.y <= bug[i].y + 30) &&
+				(0 <= bug[i].x - player.x + 30 && bug[i].x - player.x + 30 <= 20))
+			{
+				player.state = 0;
+			}
+			else if ((bug[i].y <= player.y + 30 && player.y + 30 <= bug[i].y + 30) &&
+				(0 <= bug[i].x - player.x + 30 && bug[i].x - player.x + 30 <= 20))
+			{
+				player.state = 0;
+			}
 
-				//플레이어 bottom에서 충돌
-				else if ((bug[i].x <= player.x && player.x <= bug[i].x + 30) &&
-					(0 <= bug[i].y - player.y + 30 && bug[i].y - player.y + 30 <= 20))
-				{
-					player.state = 0;
-				}
-				else if ((bug[i].x <= player.x + 30 && player.x + 30 <= bug[i].x + 30) &&
-					(0 <= bug[i].y - player.y + 30 && bug[i].y - player.y + 30 <= 20))
-				{
-					player.state = 0;
-				}
+			//플레이어 bottom에서 충돌
+			else if ((bug[i].x <= player.x && player.x <= bug[i].x + 30) &&
+				(0 <= bug[i].y - player.y + 30 && bug[i].y - player.y + 30 <= 20))
+			{
+				player.state = 0;
+			}
+			else if ((bug[i].x <= player.x + 30 && player.x + 30 <= bug[i].x + 30) &&
+				(0 <= bug[i].y - player.y + 30 && bug[i].y - player.y + 30 <= 20))
+			{
+				player.state = 0;
 			}
 		}
-
 	}
+
 }
 
 //아이템 + 버그 충돌
@@ -521,18 +546,6 @@ int IsItemCollisionCheck(Move& item, Move& player)
 
 void UpdateFunction()
 {
-
-	//if (GetKeyState(VK_LEFT) & 0x8000)      player.x -= 5;
-	//if (GetKeyState(VK_RIGHT) & 0x8000)     player.x += 5;
-	//if (GetKeyState(VK_UP) & 0x8000)        player.y -= 5;
-	//if (GetKeyState(VK_DOWN) & 0x8000)      player.y += 5;
-
-	if (input.LEFT)player.x -= 5;
-	if (input.RIGHT)player.x += 5;
-	if (input.UP)player.y -= 5;
-	if (input.DOWN)player.y += 5;
-
-
 	backGround1.y += 5;
 	backGround2.y += 5;
 
@@ -546,6 +559,7 @@ void UpdateFunction()
 	}
 
 	playerCollisionCheck(player);
+	playerCollisionCheck(player2);
 
 	score++;
 	//아이템 드롭 = 종류 설정
@@ -703,10 +717,13 @@ void UpdateFunction()
 	{
 		Gameover = true;
 	}
+	else if (player2.state == 0)
+	{
 
-	bug[bug_num].x = (rand() % 500);//버그 x좌표
-	bug[bug_num].y = -50;//버그 y좌표
-	bug[bug_num].y_move = (rand() % 3) + 2;//버그 y좌표 이동값
+	}
+	//bug[bug_num].x = (rand() % 500);//버그 x좌표
+	//bug[bug_num].y = -1;//버그 y좌표
+	//bug[bug_num].y_move = (rand() % 3) + 2;//버그 y좌표 이동값
 
 	for (int i = 0; i < 10; ++i)
 	{
@@ -759,6 +776,24 @@ void UpdateFunction()
 			collisionCheck(item_8[i]);
 		if (item_10_Flag[i] != 0)
 			collisionCheck(item_10[i]);
+	}
+}
+
+void UpdatePlayer(DWORD tID)
+{
+	if (tID == dwThreadID[0])
+	{
+		if (input.LEFT)player.x -= 5;
+		if (input.RIGHT)player.x += 5;
+		if (input.UP)player.y -= 5;
+		if (input.DOWN)player.y += 5;
+	}
+	else if (tID == dwThreadID[1])
+	{
+		if (input.LEFT)player2.x -= 5;
+		if (input.RIGHT)player2.x += 5;
+		if (input.UP)player2.y -= 5;
+		if (input.DOWN)player2.y += 5;
 	}
 }
 
