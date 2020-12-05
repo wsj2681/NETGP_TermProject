@@ -80,6 +80,7 @@ HINSTANCE hInst;
 
 void gameValueInit();
 
+int threadnum = 0;
 
 //무적 키
 static int key = 0;
@@ -194,7 +195,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		}
 		else if (!SecondPlayer.state)
 		{
-			Gameover = true;
+			Gameover2 = true;
 		}
 		break;
 	case WM_PAINT:
@@ -220,9 +221,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		}
 
 		//점수
-		if (Gameover)
+		if (Gameover && threadnum == 0)
 		{
 			
+			GAME_OVER[over_check].Draw(memdc, 0, 0, 500, 800, 0, 0, 606, 1080);
+			SetBkMode(memdc, TRANSPARENT);
+			myFont = CreateFont(40, 0, 0, 0, 0, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, TEXT("고딕"));
+			oldFont = (HFONT)SelectObject(memdc, myFont);
+			wsprintf(str, "%d  ", score);
+			TextOut(memdc, 200, 385, str, lstrlen(str));
+			SelectObject(memdc, oldFont);
+			DeleteObject(myFont);
+		}
+		else if (Gameover2 && threadnum ==1)
+		{
+
 			GAME_OVER[over_check].Draw(memdc, 0, 0, 500, 800, 0, 0, 606, 1080);
 			SetBkMode(memdc, TRANSPARENT);
 			myFont = CreateFont(40, 0, 0, 0, 0, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, TEXT("고딕"));
@@ -310,6 +323,8 @@ void gameValueInit()
 	{
 		recv(sock, (char*)&i, sizeof(i), 0);
 	}
+	
+	recv(sock, (char*)&threadnum, sizeof(threadnum), 0);
 
 	INTERRUPT_ITEM2.Load(TEXT("Images/방해2.png"));
 	BigFlowerSheet.Load(TEXT("Images/아이템11.png"));
@@ -403,7 +418,7 @@ void MenuClick()
 			}
 		}
 	}
-	if (Gameover)
+	if (Gameover && threadnum == 0)
 	{
 		if (180 < mx && mx < 320)
 		{
@@ -412,14 +427,14 @@ void MenuClick()
 				START = false;
 				menu_check = 0;
 
-				/*SecondPlayer.x = 230;
-				SecondPlayer.y = 700;*/
+				SecondPlayer.x = 230;
+				SecondPlayer.y = 700;
 				player.x = 235;
 				player.y = 650;
 				score = 0;
 
 				player.state = 1;
-				/*SecondPlayer.state = 1;*/
+				SecondPlayer.state = 1;
 				mode_2p = false;
 				for (int i = 0; i < 500; i++)
 				{
@@ -446,7 +461,62 @@ void MenuClick()
 				}
 				interrupt_ITEM2_Flag = 0;
 				key = 0;
-				
+
+				closesocket(sock);
+				// 윈속 종료
+				WSACleanup();
+				PostQuitMessage(0);
+			}
+		}
+	}
+	if (Gameover2 && threadnum == 1)
+	{
+		if (180 < mx && mx < 320)
+		{
+			if (450 < my && my < 520)
+			{
+				START = false;
+				menu_check = 0;
+
+				SecondPlayer.x = 230;
+				SecondPlayer.y = 700;
+				player.x = 235;
+				player.y = 650;
+				score = 0;
+
+				player.state = 1;
+				SecondPlayer.state = 1;
+				mode_2p = false;
+				for (int i = 0; i < 500; i++)
+				{
+					bug[i].x = -100;
+					bug[i].y = -100;
+					bug[i].state = 0;
+				}
+				item_Drop_Timer = 0;
+				item_Count = 0;
+				for (int i = 0; i < 20; ++i)
+				{
+					item_Drop[i].state = 0;
+				}
+				BIgFlowerindex = 0;
+				BallBugIndex = 0;
+				cosmosIndex = 0;
+				barriorIndex = 0;
+				for (int i = 0; i < 10; i++)
+				{
+					item_1_Flag[i] = 0;
+					item_6_Flag[i] = 0;
+					item_8_Flag[i] = 0;
+					item_10_Flag[i] = 0;
+				}
+				interrupt_ITEM2_Flag = 0;
+				key = 0;
+
+				closesocket(sock);
+				// 윈속 종료
+				WSACleanup();
+				PostQuitMessage(0);
 			}
 		}
 	}

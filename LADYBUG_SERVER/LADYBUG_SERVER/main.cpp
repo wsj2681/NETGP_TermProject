@@ -26,7 +26,7 @@ Input input;
 
 // GameFunction
 void GameValueInit();
-void SendGameInit(SOCKET client_sock);
+void SendGameInit(SOCKET client_sock, int threadnum);
 
 void UpdateFunction();
 void UpdatePlayer(DWORD tID);
@@ -128,32 +128,32 @@ DWORD WINAPI PlayerThread(LPVOID arg)
 	const char* start = "GameStart";
 	retval = send(client_sock, (char*)start, sizeof(start), 0);
 
-	SendGameInit(client_sock);
+	SendGameInit(client_sock,threadIndex);
 
 	DWORD id = dwThreadID[threadIndex];
 
 	while (true)
 	{
-		if (!player.state)
+		if (!player.state && threadIndex == 0)
 		{
-			while (true)
-			{
-				UpdateFunction();
-			}
+			closesocket(client_sock);
 			TerminateThread(hThread[0], 0);
 		}
-		if (!player2.state)
+		if (!player2.state && threadIndex == 1)
 		{
+			closesocket(client_sock);
 			TerminateThread(hThread[1], 0);
 		}
 		recv(client_sock, (char*)&input, sizeof(input), 0);
 		
-		EnterCriticalSection(&cs);
-		UpdatePlayer(id);
-		LeaveCriticalSection(&cs);
 		
+		UpdatePlayer(id);
+		
+		EnterCriticalSection(&cs);
 		UpdateFunction();
 		SendObject(client_sock);
+		LeaveCriticalSection(&cs);
+
 
 		if (!player.state && !player2.state)
 		{
@@ -287,7 +287,7 @@ void GameValueInit()
 
 }
 
-void SendGameInit(SOCKET client_sock)
+void SendGameInit(SOCKET client_sock,int threadnum)
 {
 	for (auto& i : bug)
 	{
@@ -319,6 +319,10 @@ void SendGameInit(SOCKET client_sock)
 	{
 		send(client_sock, (char*)&i, sizeof(i), 0);
 	}
+
+	//스레드 넘버 보내기
+	send(client_sock, (char*)&threadnum, sizeof(threadnum), 0);
+
 	cout << "Send OK" << endl;
 }
 
@@ -811,11 +815,28 @@ void UpdatePlayer(DWORD tID)
 
 
 
-
-void err_quit(const char* msg)
+void err_quit(char* msg)
 {
+	LPVOID lpMsgBuf;
+	FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		NULL, WSAGetLastError(),
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR)&lpMsgBuf, 0, NULL);
+	MessageBox(NULL, (LPCTSTR)lpMsgBuf, msg, MB_ICONERROR);
+	LocalFree(lpMsgBuf);
+	exit(1);
 }
 
-void err_display(const char* msg)
+// 소켓 함수 오류 출력
+void err_display(char* msg)
 {
+	LPVOID lpMsgBuf;
+	FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		NULL, WSAGetLastError(),
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR)&lpMsgBuf, 0, NULL);
+	printf("[%s] %s", msg, (char*)lpMsgBuf);
+	LocalFree(lpMsgBuf);
 }
