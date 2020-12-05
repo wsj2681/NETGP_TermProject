@@ -34,8 +34,8 @@ void UpdatePlayer(DWORD tID);
 void SendObject(SOCKET client_sock);
 
 // ErrorFunction
-void err_quit(const char* msg);
-void err_display(const char* msg);
+//void err_quit(const char* msg);
+//void err_display(const char* msg);
 
 int main()
 {
@@ -46,8 +46,8 @@ int main()
 		return 1;
 
 	SOCKET listen_sock = socket(AF_INET, SOCK_STREAM, 0);
-	if (listen_sock == INVALID_SOCKET)
-		err_quit("socket()");
+	/*if (listen_sock == INVALID_SOCKET)
+		err_quit("socket()");*/
 
 	SOCKADDR_IN serveraddr;
 	ZeroMemory(&serveraddr, sizeof(serveraddr));
@@ -55,12 +55,12 @@ int main()
 	serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serveraddr.sin_port = htons(SERVERPORT);
 	retval = bind(listen_sock, (SOCKADDR*)&serveraddr, sizeof(serveraddr));
-	if (retval == SOCKET_ERROR)
-		err_quit("bind()");
+	/*if (retval == SOCKET_ERROR)
+		err_quit("bind()");*/
 
 	retval = listen(listen_sock, SOMAXCONN);
-	if (retval == SOCKET_ERROR)
-		err_quit("listen()");
+	/*if (retval == SOCKET_ERROR)
+		err_quit("listen()");*/
 
 	SOCKET client_sock;
 	SOCKADDR_IN client_addr;
@@ -77,11 +77,11 @@ int main()
 		client_addr_len = sizeof(client_addr);
 		client_sock = accept(listen_sock, (SOCKADDR*)&client_addr, &client_addr_len);
 
-		if (client_sock == INVALID_SOCKET)
+		/*if (client_sock == INVALID_SOCKET)
 		{
 			err_display("accept()");
 			break;
-		}
+		}*/
 
 		cout <<
 			"\n[TCP 서버] 클라이언트 접속: IP 주소= " << inet_ntoa(client_addr.sin_addr) <<
@@ -118,10 +118,10 @@ DWORD WINAPI PlayerThread(LPVOID arg)
 	getpeername(client_sock, (SOCKADDR*)&client_addr, &client_addr_len);
 
 	retval = recv(client_sock, (char*)GameReady, sizeof(GameReady), 0);
-	if (retval == SOCKET_ERROR)
+	/*if (retval == SOCKET_ERROR)
 	{
 		err_quit("Ready Error()");
-	}
+	}*/
 
 	GameValueInit();
 
@@ -817,26 +817,11 @@ void UpdatePlayer(DWORD tID)
 
 void err_quit(char* msg)
 {
-	LPVOID lpMsgBuf;
-	FormatMessage(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-		NULL, WSAGetLastError(),
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPTSTR)&lpMsgBuf, 0, NULL);
-	MessageBox(NULL, (LPCTSTR)lpMsgBuf, msg, MB_ICONERROR);
-	LocalFree(lpMsgBuf);
-	exit(1);
+	
 }
 
 // 소켓 함수 오류 출력
 void err_display(char* msg)
 {
-	LPVOID lpMsgBuf;
-	FormatMessage(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-		NULL, WSAGetLastError(),
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPTSTR)&lpMsgBuf, 0, NULL);
-	printf("[%s] %s", msg, (char*)lpMsgBuf);
-	LocalFree(lpMsgBuf);
+	
 }
