@@ -23,7 +23,7 @@ using namespace std;
 
 #include <winsock2.h>
 #pragma comment(lib, "ws2_32")
-#define MONSTER 10
+#define MONSTER 100
 #define SERVERIP   "127.0.0.1"
 #define SERVERPORT 9000
 #define BUFSIZE    512

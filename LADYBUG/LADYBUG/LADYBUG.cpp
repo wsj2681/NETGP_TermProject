@@ -465,6 +465,8 @@ void MenuClick()
 				closesocket(sock);
 				// 윈속 종료
 				WSACleanup();
+
+
 				PostQuitMessage(0);
 			}
 		}

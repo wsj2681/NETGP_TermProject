@@ -160,7 +160,7 @@ DWORD WINAPI PlayerThread(LPVOID arg)
 			return 0;
 		}
 	}
-
+	cout << "스레드 종료" << endl;
 	return 0;
 }
 
@@ -560,7 +560,7 @@ int IsItemCollisionCheck(Move& item, Move& player)
 	return 0;
 }
 
-void UpdateFunction()
+void UpdateFunction() 
 {
 	backGround1.y += 5;
 	backGround2.y += 5;
@@ -738,7 +738,7 @@ void UpdateFunction()
 
 	}
 	bug[bug_num].x = (rand() % 500);//버그 x좌표
-	bug[bug_num].y = -1;//버그 y좌표
+	bug[bug_num].y = -50;//버그 y좌표
 	bug[bug_num].y_move = (rand() % 3) + 2;//버그 y좌표 이동값
 
 	for (int i = 0; i < 10; ++i)

@@ -1,6 +1,6 @@
 #pragma once
 
-#define MONSTER 10
+#define MONSTER 100
 
 #define BUFFERSIZE 512
 #define SERVERPORT 9000
@@ -305,7 +305,10 @@ static int itme_menu_check = 6;
 
 float bug_x_move(BUG bug, Move player)
 {
-	float bug_lean = ((float)(player.y - bug.y) / (float)(player.x - bug.x));
-	bug.x_move = bug.y_move / bug_lean;
-	return bug.x_move;
+	if (player.state)
+	{
+		float bug_lean = ((float)(player.y - bug.y) / (float)(player.x - bug.x));
+		bug.x_move = bug.y_move / bug_lean;
+		return bug.x_move;
+	}
 }
