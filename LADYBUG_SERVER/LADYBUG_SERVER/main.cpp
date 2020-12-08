@@ -34,8 +34,8 @@ void UpdatePlayer(DWORD tID);
 void SendObject(SOCKET client_sock);
 
 // ErrorFunction
-//void err_quit(const char* msg);
-//void err_display(const char* msg);
+void err_quit(const char* msg);
+void err_display(const char* msg);
 
 int main()
 {
@@ -46,8 +46,8 @@ int main()
 		return 1;
 
 	SOCKET listen_sock = socket(AF_INET, SOCK_STREAM, 0);
-	/*if (listen_sock == INVALID_SOCKET)
-		err_quit("socket()");*/
+	if (listen_sock == INVALID_SOCKET)
+		err_quit("socket()");
 
 	SOCKADDR_IN serveraddr;
 	ZeroMemory(&serveraddr, sizeof(serveraddr));
@@ -55,12 +55,12 @@ int main()
 	serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serveraddr.sin_port = htons(SERVERPORT);
 	retval = bind(listen_sock, (SOCKADDR*)&serveraddr, sizeof(serveraddr));
-	/*if (retval == SOCKET_ERROR)
-		err_quit("bind()");*/
+	if (retval == SOCKET_ERROR)
+		err_quit("bind()");
 
 	retval = listen(listen_sock, SOMAXCONN);
-	/*if (retval == SOCKET_ERROR)
-		err_quit("listen()");*/
+	if (retval == SOCKET_ERROR)
+		err_quit("listen()");
 
 	SOCKET client_sock;
 	SOCKADDR_IN client_addr;
@@ -76,12 +76,11 @@ int main()
 	{
 		client_addr_len = sizeof(client_addr);
 		client_sock = accept(listen_sock, (SOCKADDR*)&client_addr, &client_addr_len);
-
-		/*if (client_sock == INVALID_SOCKET)
+		if (client_sock == INVALID_SOCKET)
 		{
 			err_display("accept()");
 			break;
-		}*/
+		}
 
 		cout <<
 			"\n[TCP 서버] 클라이언트 접속: IP 주소= " << inet_ntoa(client_addr.sin_addr) <<
@@ -109,19 +108,20 @@ DWORD WINAPI PlayerThread(LPVOID arg)
 	int retval;
 	int threadIndex = idIndex;
 	idIndex++;
+
 	SOCKET client_sock = (SOCKET)arg;
 	SOCKADDR_IN client_addr;
 	int client_addr_len;
-	char buf[2];
+
 	char GameReady[6];
-	ZeroMemory(&buf, sizeof(buf));
+
 	getpeername(client_sock, (SOCKADDR*)&client_addr, &client_addr_len);
 
 	retval = recv(client_sock, (char*)GameReady, sizeof(GameReady), 0);
-	/*if (retval == SOCKET_ERROR)
+	if (retval == SOCKET_ERROR)
 	{
 		err_quit("Ready Error()");
-	}*/
+	}
 
 	GameValueInit();
 
@@ -136,24 +136,35 @@ DWORD WINAPI PlayerThread(LPVOID arg)
 	{
 		if (!player.state && threadIndex == 0)
 		{
+			while (true)
+			{
+				UpdateFunction();
+			}
+
 			closesocket(client_sock);
 			TerminateThread(hThread[0], 0);
 		}
 		if (!player2.state && threadIndex == 1)
 		{
+			while (true)
+			{
+				UpdateFunction();
+			}
 			closesocket(client_sock);
 			TerminateThread(hThread[1], 0);
 		}
 		recv(client_sock, (char*)&input, sizeof(input), 0);
 		
 		
-		UpdatePlayer(id);
-		
 		EnterCriticalSection(&cs);
-		UpdateFunction();
-		SendObject(client_sock);
+		UpdatePlayer(id);
 		LeaveCriticalSection(&cs);
+		
+		UpdateFunction();
 
+
+		SendObject(client_sock);
+		score++;
 
 		if (!player.state && !player2.state)
 		{
@@ -390,6 +401,8 @@ void SendObject(SOCKET client_sock)
 	{
 		send(client_sock, (char*)&i, sizeof(i), 0);
 	}
+
+	send(client_sock, (char*)&score, sizeof(int), 0);
 }
 
 static int key = 0;
@@ -765,7 +778,7 @@ void UpdateFunction()
 	}
 	else
 	{
-		if (rand() % 1 == 0)
+		if (rand() % 10 == 0)
 		{
 			bug_num++;//버그 수 증가
 		}
@@ -815,13 +828,27 @@ void UpdatePlayer(DWORD tID)
 
 
 
-void err_quit(char* msg)
+void err_quit(const char* msg)
 {
-	
+	LPVOID lpMsgBuf;
+	FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(),
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
+
+	MessageBox(NULL, (LPCTSTR)lpMsgBuf, msg, MB_ICONERROR);
+	LocalFree(lpMsgBuf);
+
+	exit(1);
 }
 
 // 소켓 함수 오류 출력
-void err_display(char* msg)
+void err_display(const char* msg)
 {
-	
+	LPVOID lpMsgBuf;
+	FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(),
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
+
+	std::cout << "[" << msg << "] " << (char*)lpMsgBuf;
+	LocalFree(lpMsgBuf);
 }

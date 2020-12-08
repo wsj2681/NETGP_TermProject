@@ -2,7 +2,7 @@
 C:\Users\wsj26\Desktop\NETGP_TermProject\LADYBUG_SERVER\LadyBug_Server\framework.h(311,27): warning C4244: '=': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
 C:\Users\wsj26\Desktop\NETGP_TermProject\LADYBUG_SERVER\LadyBug_Server\framework.h(312,13): warning C4244: 'return': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
 C:\Users\wsj26\Desktop\NETGP_TermProject\LADYBUG_SERVER\LadyBug_Server\main.cpp(68,7): warning C4101: 'buf' :참조되지 않은 지역 변수입니다.
-C:\Users\wsj26\Desktop\NETGP_TermProject\LADYBUG_SERVER\LadyBug_Server\main.cpp(748,36): warning C4244: '=': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\wsj26\Desktop\NETGP_TermProject\LADYBUG_SERVER\LadyBug_Server\main.cpp(754,36): warning C4244: '=': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\wsj26\Desktop\NETGP_TermProject\LADYBUG_SERVER\LadyBug_Server\main.cpp(761,36): warning C4244: '=': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\wsj26\Desktop\NETGP_TermProject\LADYBUG_SERVER\LadyBug_Server\main.cpp(767,36): warning C4244: '=': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
 C:\Users\wsj26\Desktop\NETGP_TermProject\LADYBUG_SERVER\LadyBug_Server\framework.h(314): warning C4715: 'bug_x_move': 모든 제어 경로에서 값을 반환하지는 않습니다.
   LadyBug_Server.vcxproj -> C:\Users\wsj26\Desktop\NETGP_TermProject\LADYBUG_SERVER\x64\Debug\LadyBug_Server.exe

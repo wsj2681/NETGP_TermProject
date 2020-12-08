@@ -71,6 +71,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdPa
 		DispatchMessage(&Message);
 	}
 
+	closesocket(sock);
+	// 윈속 종료
+	WSACleanup();
+
 	//send(sock, (char*)&Gameover, sizeof(Gameover), 0);
 
 	return (int)Message.wParam;
@@ -120,7 +124,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 
 	HBRUSH hBrush, oldBrush;
 	HFONT myFont, oldFont;
-
 
 	switch (iMessage)
 	{
@@ -418,8 +421,7 @@ void MenuClick()
 			}
 		}
 	}
-	if (Gameover && threadnum == 0)
-	{
+
 		if (180 < mx && mx < 320)
 		{
 			if (450 < my && my < 520)
@@ -462,17 +464,13 @@ void MenuClick()
 				interrupt_ITEM2_Flag = 0;
 				key = 0;
 
-				closesocket(sock);
-				// 윈속 종료
-				WSACleanup();
+				
 
 
-				PostQuitMessage(0);
+				//PostQuitMessage(0);
 			}
 		}
-	}
-	if (Gameover2 && threadnum == 1)
-	{
+
 		if (180 < mx && mx < 320)
 		{
 			if (450 < my && my < 520)
@@ -515,13 +513,10 @@ void MenuClick()
 				interrupt_ITEM2_Flag = 0;
 				key = 0;
 
-				closesocket(sock);
-				// 윈속 종료
-				WSACleanup();
-				PostQuitMessage(0);
+				//PostQuitMessage(0);
 			}
 		}
-	}
+
 }
 
 void ItemMenuClick(LPARAM lParam)
@@ -664,7 +659,7 @@ void RecvObject()
 	{
 		recv(sock, (char*)&i, sizeof(i), 0);
 	}
-
+	recv(sock, (char*)&score, sizeof(int), 0);
 }
 
 void DrawItems(HDC memdc)
