@@ -87,7 +87,7 @@ int main()
 			", Æ÷Æ® ¹øÈ£=" << ntohs(client_addr.sin_port) << endl;
 
 		hThread[threadCount] = CreateThread(nullptr, 0, PlayerThread, (LPVOID)client_sock, 0, &dwThreadID[threadCount]);
-
+		
 		threadCount++;
 	}
 
@@ -131,9 +131,9 @@ DWORD WINAPI PlayerThread(LPVOID arg)
 	SendGameInit(client_sock,threadIndex);
 
 	DWORD id = dwThreadID[threadIndex];
-
 	while (true)
 	{
+<<<<<<< HEAD
 		if (!player.state && threadIndex == 0)
 		{
 			while (true)
@@ -156,19 +156,28 @@ DWORD WINAPI PlayerThread(LPVOID arg)
 		recv(client_sock, (char*)&input, sizeof(input), 0);
 		
 		
+=======
+		recv(client_sock, (char*)&input, sizeof(input), 0);
+
+>>>>>>> parent of 9429522... ìˆ˜ì—…ì‹œê°„
 		EnterCriticalSection(&cs);
 		UpdatePlayer(id);
 		LeaveCriticalSection(&cs);
-		
+
 		UpdateFunction();
 
 
 		SendObject(client_sock);
+<<<<<<< HEAD
 		score++;
 
 		if (!player.state && !player2.state)
+=======
+		
+		if (!player.state)
+>>>>>>> parent of 9429522... ìˆ˜ì—…ì‹œê°„
 		{
-			return 0;
+
 		}
 	}
 	cout << "½º·¹µå Á¾·á" << endl;
@@ -401,8 +410,12 @@ void SendObject(SOCKET client_sock)
 	{
 		send(client_sock, (char*)&i, sizeof(i), 0);
 	}
+<<<<<<< HEAD
 
 	send(client_sock, (char*)&score, sizeof(int), 0);
+=======
+	cout << "Send OK" << endl;
+>>>>>>> parent of 9429522... ìˆ˜ì—…ì‹œê°„
 }
 
 static int key = 0;
@@ -626,7 +639,7 @@ void UpdateFunction()
 
 			//µå·Ó ¾ÆÀÌÅÛ°ú Ãæµ¹Ã¼Å©
 			//1pÀÏ¶§ 
-			if (IsItemCollisionCheck(item_Drop[i], player)|| IsItemCollisionCheck(item_Drop[i], player2))
+			if (IsItemCollisionCheck(item_Drop[i], player))
 			{
 				if (item_Drop[i].state == 1)
 				{
@@ -750,9 +763,15 @@ void UpdateFunction()
 	{
 
 	}
+<<<<<<< HEAD
 	bug[bug_num].x = (rand() % 500);//¹ö±× xÁÂÇ¥
 	bug[bug_num].y = -50;//¹ö±× yÁÂÇ¥
 	bug[bug_num].y_move = (rand() % 3) + 2;//¹ö±× yÁÂÇ¥ ÀÌµ¿°ª
+=======
+	//bug[bug_num].x = (rand() % 500);//¹ö±× xÁÂÇ¥
+	//bug[bug_num].y = -1;//¹ö±× yÁÂÇ¥
+	//bug[bug_num].y_move = (rand() % 3) + 2;//¹ö±× yÁÂÇ¥ ÀÌµ¿°ª
+>>>>>>> parent of 9429522... ìˆ˜ì—…ì‹œê°„
 
 	for (int i = 0; i < 10; ++i)
 	{
@@ -778,7 +797,11 @@ void UpdateFunction()
 	}
 	else
 	{
+<<<<<<< HEAD
 		if (rand() % 10 == 0)
+=======
+		if (rand() % 4 == 0)
+>>>>>>> parent of 9429522... ìˆ˜ì—…ì‹œê°„
 		{
 			bug_num++;//¹ö±× ¼ö Áõ°¡
 		}

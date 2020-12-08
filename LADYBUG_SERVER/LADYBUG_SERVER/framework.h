@@ -81,7 +81,6 @@ void ITEM1(Move& item_1, int i)
 
 	item_1.picX = 0 + (item_1_frame[i] * 230);
 	item_1.picY = item_1_carry[i] * 226;
-
 	item_1_frame[i]++;
 
 	if (item_1_frame[i] >= 8)

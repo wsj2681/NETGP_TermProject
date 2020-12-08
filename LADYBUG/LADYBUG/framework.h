@@ -129,8 +129,6 @@ static CImage menu[4];
 static CImage item_menu[6];
 
 static BOOL Gameover = false;
-static BOOL Gameover2 = false;
-
 static int mx, my;
 static int score;
 static int bug_num;

@@ -191,15 +191,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 
 		RecvObject();
 		InvalidateRgn(hWnd, NULL, FALSE);
-
 		if (!player.state)
 		{
 			Gameover = true;
 		}
+<<<<<<< HEAD
 		else if (!SecondPlayer.state)
 		{
 			Gameover2 = true;
 		}
+=======
+
+>>>>>>> parent of 9429522... 수업시간
 		break;
 	case WM_PAINT:
 		hDC = BeginPaint(hWnd, &ps);
@@ -212,7 +215,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		BACKGROUND.Draw(memdc, backGround2.x, backGround2.y, backGround2.w, backGround2.h, backGround2.picX, backGround2.picY, backGround2.picW, backGround2.picH);
 
 		DrawItems(memdc);
-
+		
 		//방해요소 2
 		if (interrupt_ITEM2_Flag == 1)
 		{
@@ -226,7 +229,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		//점수
 		if (Gameover && threadnum == 0)
 		{
-			
 			GAME_OVER[over_check].Draw(memdc, 0, 0, 500, 800, 0, 0, 606, 1080);
 			SetBkMode(memdc, TRANSPARENT);
 			myFont = CreateFont(40, 0, 0, 0, 0, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, TEXT("고딕"));
